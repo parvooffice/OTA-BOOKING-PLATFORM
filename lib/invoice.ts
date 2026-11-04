@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type InvoiceDetails = {
   id: string; created_at: string; checkin_date: string; checkout_date: string; guests: number;
   subtotal_inr: number; taxes_inr: number; total_inr: number; amount_paid_inr: number;
-  guestName: string; guestEmail: string; propertyName: string; district: string;
+  guestName: string; guestPhone: string; guestEmail: string; propertyName: string; district: string;
   legalName?: string; gstin?: string; legalAddress?: string; gstPercent?: number;
 };
 
@@ -28,7 +28,7 @@ export async function createInvoicePdf(booking: InvoiceDetails) {
   document.text(`Issued: ${new Date(booking.created_at).toLocaleDateString("en-IN", { dateStyle: "long" })}`);
   document.moveDown(1.5);
   document.fillColor("#2a211a").font("Helvetica-Bold").text("Guest");
-  document.font("Helvetica").text(booking.guestName || booking.guestEmail).text(booking.guestEmail);
+  document.font("Helvetica").text(booking.guestName || booking.guestEmail).text(booking.guestPhone).text(booking.guestEmail);
   document.moveDown(.8);
   document.font("Helvetica-Bold").text("Stay");
   document.font("Helvetica").text(`${booking.propertyName} · ${booking.district}, Odisha`);
@@ -51,24 +51,23 @@ export async function createInvoicePdf(booking: InvoiceDetails) {
 
 export async function sendBookingConfirmation(service: SupabaseClient, bookingId: string) {
   if (!process.env.RESEND_API_KEY) return;
-  const { data: booking } = await service.from("bookings").select("id,guest_id,created_at,checkin_date,checkout_date,guests,subtotal_inr,taxes_inr,total_inr,amount_paid_inr,properties(name,district)").eq("id", bookingId).maybeSingle();
+  const { data: booking } = await service.from("bookings").select("id,guest_id,guest_id_name,guest_phone,created_at,checkin_date,checkout_date,guests,subtotal_inr,taxes_inr,total_inr,amount_paid_inr,properties(name,district)").eq("id", bookingId).maybeSingle();
   if (!booking) return;
-  const [{ data: guestResult }, { data: profile }, { data: settings }] = await Promise.all([
+  const [{ data: guestResult }, { data: settings }] = await Promise.all([
     service.auth.admin.getUserById(booking.guest_id),
-    service.from("profiles").select("full_name").eq("id", booking.guest_id).maybeSingle(),
     service.from("admin_settings").select("key,value").in("key", ["invoice_legal_name", "invoice_gstin", "invoice_address", "gst_percent"])
   ]);
   const guestEmail = guestResult.user?.email;
   if (!guestEmail) return;
   const property = booking.properties as unknown as { name: string; district: string } | null;
   const settingsMap = Object.fromEntries((settings ?? []).map((item) => [item.key, item.value]));
-  const detail: InvoiceDetails = { ...booking, guestName: profile?.full_name ?? "", guestEmail, propertyName: property?.name ?? "Odisha Retreat stay", district: property?.district ?? "Odisha", legalName: String(settingsMap.invoice_legal_name ?? ""), gstin: String(settingsMap.invoice_gstin ?? ""), legalAddress: String(settingsMap.invoice_address ?? ""), gstPercent: Number(settingsMap.gst_percent ?? 5) };
+  const detail: InvoiceDetails = { ...booking, guestName: booking.guest_id_name, guestPhone: booking.guest_phone, guestEmail, propertyName: property?.name ?? "Odisha Retreat stay", district: property?.district ?? "Odisha", legalName: String(settingsMap.invoice_legal_name ?? ""), gstin: String(settingsMap.invoice_gstin ?? ""), legalAddress: String(settingsMap.invoice_address ?? ""), gstPercent: Number(settingsMap.gst_percent ?? 5) };
   const invoice = await createInvoicePdf(detail);
   const from = process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>";
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from, to: guestEmail, subject: `Your stay is confirmed · Odisha Retreat`,
-    html: `<p>Dear ${escapeHtml(detail.guestName || "guest")},</p><p>Your dates at ${escapeHtml(detail.propertyName)} are confirmed. We’ll be in touch with the arrival details closer to your stay.</p><p><strong>${detail.checkin_date} to ${detail.checkout_date}</strong></p><p>Paid: INR ${detail.amount_paid_inr.toLocaleString("en-IN")} · Booking total: INR ${detail.total_inr.toLocaleString("en-IN")}</p><p>Warmly,<br>Your host at Odisha Retreat</p>`,
+    html: `<p>Dear ${escapeHtml(detail.guestName || "guest")},</p><p>Your dates at ${escapeHtml(detail.propertyName)} are confirmed. We’ll be in touch with the arrival details closer to your stay.</p><p><strong>${detail.checkin_date} to ${detail.checkout_date}</strong></p><p>Guest mobile: ${escapeHtml(detail.guestPhone)}</p><p>Paid: INR ${detail.amount_paid_inr.toLocaleString("en-IN")} · Booking total: INR ${detail.total_inr.toLocaleString("en-IN")}</p><p>Warmly,<br>Your host at Odisha Retreat</p>`,
     attachments: [{ filename: `Odisha-Retreat-invoice-${bookingId.slice(0, 8)}.pdf`, content: invoice }]
   });
 }

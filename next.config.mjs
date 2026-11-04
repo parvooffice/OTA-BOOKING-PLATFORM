@@ -10,7 +10,10 @@ const nextConfig = {
   turbopack: { root: process.cwd() },
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: supabaseUrl ? [{ protocol: supabaseUrl.protocol.slice(0, -1), hostname: supabaseUrl.hostname, pathname: "/storage/v1/object/sign/property-images/**" }] : []
+    remotePatterns: supabaseUrl ? [
+      { protocol: supabaseUrl.protocol.slice(0, -1), hostname: supabaseUrl.hostname, pathname: "/storage/v1/object/public/property-images/**" },
+      { protocol: supabaseUrl.protocol.slice(0, -1), hostname: supabaseUrl.hostname, pathname: "/storage/v1/object/sign/property-images/**" }
+    ] : []
   }
 };
 

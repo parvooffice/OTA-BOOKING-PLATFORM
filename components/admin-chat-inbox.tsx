@@ -41,9 +41,9 @@ export function AdminChatInbox() {
     let cancelled = false;
     const connect = async () => {
       try {
-        const token = await getToken({ template: "supabase" });
+        const token = await getToken();
         if (!token || cancelled) return;
-        client = getClerkSupabaseBrowserClient(token);
+        client = getClerkSupabaseBrowserClient(() => getToken());
         if (!client) return;
         await client.realtime.setAuth(token);
         const channel = client.channel("admin:chat")
@@ -52,7 +52,7 @@ export function AdminChatInbox() {
           .subscribe();
         if (activeId) channelRef.current = client.channel(`conversation:${activeId}`).on("broadcast", { event: "typing" }, ({ payload }) => setTyping(payload?.sender_role === "guest" && payload?.typing === true)).subscribe();
         void channel;
-      } catch { /* The REST inbox continues to refresh if the Clerk JWT template is not configured. */ }
+      } catch { /* The REST inbox continues to refresh if the Clerk Supabase integration is not configured. */ }
     };
     void connect();
     return () => { cancelled = true; channelRef.current = null; if (client) void client.removeAllChannels(); };
@@ -103,6 +103,6 @@ export function AdminChatInbox() {
 function AdminAttachment({ path, name }: { path: string; name: string }) {
   const { getToken } = useAuth();
   const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => { void getToken({ template: "supabase" }).then((token) => { if (!token) return; const client = getClerkSupabaseBrowserClient(token); if (client) void client.storage.from("chat-attachments").createSignedUrl(path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null)); }); }, [getToken, path]);
+  useEffect(() => { const client = getClerkSupabaseBrowserClient(() => getToken()); if (client) void client.storage.from("chat-attachments").createSignedUrl(path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? null)); }, [getToken, path]);
   return url ? <a href={url} target="_blank" rel="noreferrer" className="mt-2 block text-xs underline">{name}</a> : <span className="mt-2 block text-xs text-ink/50">{name}</span>;
 }

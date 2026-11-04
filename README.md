@@ -1,113 +1,77 @@
-# OTA-BOOKING-PLATFORM
+# Odisha Retreat
 
-Odisha Retreat is a small, owner-run booking site for four independently owned stays in Odisha.
+Odisha Retreat is a Next.js booking site for two owner-managed stays: **Puri** (`puri`) and **Village Retreat** (`village-retreat`). Supabase provides the database, guest authentication, storage, realtime and Edge Functions. Vercel hosts the Next.js frontend.
 
-The starter records are called **Property 1–4** and are set in Puri, Chilika, Gopalpur and Similipal. Replace their copy and the generated illustration PNGs with the owner's real details before launch.
+## Local setup
 
-## Staged project structure
+Use Node 20.9 or newer.
 
-```text
-app/                         Next.js App Router pages and trusted API routes
-  page.tsx                   Editorial home, story and Odisha map
-  properties/[slug]/         Stay details, gallery, availability and booking panel
-  booking/[id]/               Guest checkout and confirmed-booking details
-  account/                    Supabase guest login, bookings and messages
-  admin/                      Clerk-only owner dashboard
-  api/                        Holds, payments, chat, images, invoices and calendar feeds
-components/                  Responsive design and booking/admin UI
-lib/                         Property data, Supabase, Clerk, pricing, invoice and payment helpers
-public/brand/                 Konark mark, logo PNG and ikat border PNG
-public/properties/{slug}/     hero.png, gallery/*.png and thumbs/*.png
-scripts/                      Placeholder generator, MapLibre worker copy and four-stay seed
-supabase/migrations/          Schema, exclusions, RLS, realtime and booking functions
-supabase/functions/           Ten-minute hold expiry endpoint
-tests/                        Booking-overlap and Razorpay signature tests
-```
-
-## Run the site
-
-Use Node 20.9 or newer (Node 22 LTS is recommended).
-
-```bash
+```powershell
 npm install
 Copy-Item .env.example .env.local
-npm run dev
+npm run dev -- --hostname 0.0.0.0
 ```
 
-The public home and property pages render with the local placeholders before external services are configured. Booking, guest authentication, the host desk and online payments need the corresponding credentials in `.env.local`.
+The public pages read properties from Supabase. There is no local preview database or sample-property fallback. Add the Supabase values to `.env.local` before running the app. To view the site from another device on the same Wi-Fi, open `http://<computer-LAN-IP>:3000` on that device.
 
-To open the dev site from another device on the same Wi-Fi, run `npm run dev -- --hostname 0.0.0.0`, then visit `http://<this-computer-LAN-IP>:3000` on that device. The Next.js dev config discovers this computer's active IPv4 addresses automatically.
+The seed creates only the Puri and Village Retreat property records. The Village Retreat map point starts at the former second map location and can be corrected in **/admin → Properties**. The property name, location, pricing, details and photos are editable there. Prices start at ₹0 so payment stays disabled until a nightly price is set.
 
-## Supabase setup
+## Supabase schema and seed
 
-1. Create a Supabase project. Enable Email OTP and configure Google under **Authentication → Providers** if you want Google sign-in.
-2. Copy the project URL, anon key and service-role key into `.env.local`. Keep the service-role key server-only; never prefix it with `NEXT_PUBLIC_`.
-3. Install the Supabase CLI, link the project, then apply the migration:
+Migration `001_initial_schema.sql` creates the existing schema, date-overlap exclusion constraints, RLS policies, realtime availability notifications and booking hold functions. Migration `002_two_stays_guest_details_pricing.sql` adds guest identity and extra-guest pricing, removes the obsolete property records and their placeholder photos, makes property photos public-read/admin-write, configures private chat storage and schedules held-booking expiry once a minute.
 
-   ```bash
-   supabase link --project-ref YOUR_PROJECT_REF
-   supabase db push
-   npm run seed
-   ```
+Apply migrations before seeding:
 
-   `npm run seed` creates the four starter property records and uploads their PNG display files, thumbnails and untouched originals to the private `property-images` bucket. The migration creates the private chat-attachment bucket, RLS policies, public date-only availability view, realtime broadcasts, booking hold RPC and exclusion constraints.
-4. Add the Supabase redirect URLs for `http://localhost:3000/auth/callback` and `https://odisharetreat.com/auth/callback`. Set the email template to deliver the one-time token used by the account page.
-5. For local Supabase, start the CLI stack and run `supabase db reset` before seeding.
-
-The database rejects overlapping held or confirmed stays with a `btree_gist` exclusion constraint. Booking holds expire after ten minutes. Deploy `supabase/functions/expire-holds` and invoke it every minute with `Authorization: Bearer $CRON_SECRET`; set the function's `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET` secrets. Supabase Cron with `pg_net` or a trusted external scheduler can invoke the function.
-
-Availability subscribers receive a small broadcast containing only the property and affected dates. Guest names, messages and booking details never appear in the public availability view or its broadcast.
-
-## Clerk admin setup
-
-1. Create a Clerk application and add its publishable and secret keys to `.env.local`.
-2. Set `ADMIN_EMAILS` to the one owner's Clerk email address. Server pages and every `/api/admin/*` route check the authenticated Clerk user's primary email; signed-in users outside this list receive a 404.
-3. Add Clerk as a third-party JWT provider in the Supabase project's **Authentication → Third-Party Auth** settings.
-4. In Clerk, create a JWT template named `supabase` with the Supabase project audience and `role: "authenticated"`. Include `app_metadata.role: "admin"` only for the owner account (for example, map a server-managed `user.public_metadata.supabase_role` value). The migration's RLS policies use that claim to grant admin access to Supabase Realtime. The application's email allowlist remains the server-side authorization check.
-
-Guest sessions use Supabase Auth. Clerk protects the host desk only.
-
-## Razorpay test mode
-
-1. Add the Razorpay test key ID and secret to `.env.local`. The key ID is public and is used by Checkout; the secret stays server-side.
-2. Configure a Razorpay webhook at `https://odisharetreat.com/api/payments/webhook` (use a tunnel URL for local development). Subscribe to `payment.captured`, `payment.failed` and `refund.processed`, then add the webhook secret to `RAZORPAY_WEBHOOK_SECRET`.
-3. The server creates INR orders in paise. The browser callback's signature is checked, but a booking becomes confirmed only when the signed, idempotent webhook arrives. Late captured payments are refunded if their hold has already expired.
-4. Deposit payments can be enabled in the owner dashboard. The admin's GST, cancellation, legal-name and GSTIN settings are used for new booking totals and PDF receipts.
-
-## Email and WhatsApp
-
-Add a Resend API key and a verified sender in `BOOKING_FROM_EMAIL`. The app emails booking confirmation and a GST-friendly PDF invoice, and sends owner/guest message notifications. Set `NEXT_PUBLIC_WHATSAPP_NUMBER` to show the host's WhatsApp link; the owner inbox can also open a guest's supplied phone number in WhatsApp.
-
-## Images
-
-The repository contains generated postcard illustrations, not photographs of actual properties. Replace them with licensed owner photography before launch. Put the images in the folder matching the stay slug (`puri`, `chilika`, `gopalpur` or `similipal`) and keep these names and folders:
-
-```text
-public/properties/{slug}/hero.png
-public/properties/{slug}/gallery/01.png
-public/properties/{slug}/gallery/02.png
-public/properties/{slug}/thumbs/01.png
-public/properties/{slug}/thumbs/02.png
+```powershell
+supabase login
+supabase link --project-ref <SUPABASE_PROJECT_REF>
+supabase db push
+npm run cleanup:property-images
+npm run seed
 ```
 
-For example, replace Chilika's cover at `public/properties/chilika/hero.png` and its gallery images under `public/properties/chilika/gallery/`. Keep the current files' dimensions/aspect ratios where possible. Regenerate the placeholder set with `npm run assets:placeholders` if needed. After replacing local files, commit and push them so Vercel receives the new images. The owner image manager is another option once Supabase is configured; it uploads originals and saves processed display images to the private `property-images` bucket.
+Run `cleanup:property-images` once after the migration and before uploading real photos. It uses the Storage API to remove the generated starter images; it deletes every object in `property-images`, so do not run it again after adding real photos. The seed inserts the two editable property rows only. It creates no guest accounts, bookings, conversations, messages, payments or images. Apply migrations and seed against the intended Supabase project; do not run them against a database containing records you need to keep without reviewing migration `002` first.
 
-The image manager accepts browser-supported JPEG, WebP, PNG and HEIC uploads. It preserves the uploaded original under `originals/` and writes display and thumbnail PNGs. Crop, rotate, flip, brightness, contrast, saturation, sort order, cover choice and alt text are saved through the owner-only API.
+## Guest checkout and pricing
 
-## Tests and checks
+Before opening Razorpay, the guest saves the name shown on their government ID, a 10-digit Indian mobile number and guest count. The app validates these values in the browser and on the server. The mobile is stored in E.164 format (`+91…`).
 
-```bash
+The host controls the base nightly price, maximum guests, **COMPLIMENTARY TILL** guest count, per-extra-guest fee and per-night/per-stay fee mode under **/admin → Properties → Pricing**. Set each property's maximum to the real allowed capacity before accepting bookings; it must be at least the complimentary guest count. The server recalculates seasonal nightly price, extra guests, cleaning and GST when it creates the Razorpay order; the browser never supplies the payable amount.
+
+## Add property photos
+
+1. Sign in to `/admin`, open **Image manager**, and choose Puri or Village Retreat.
+2. Upload PNG files only (up to 12 MiB each). The storage bucket keeps PNG originals and serves the cover, gallery and thumbnails from Supabase Storage.
+3. Use the image manager to crop, reorder, set the cover image and edit alt text. The empty local folders `public/properties/<slug>/gallery/` and `public/properties/<slug>/thumbs/` are retained for organization; production photos are uploaded through `/admin`, not committed as seed images.
+
+The `property-images` bucket is public-read and admin-write. The `chat-attachments` bucket is private and its storage policies limit access to conversation participants and admins.
+
+## Numbered go-live checklist
+
+1. **Supabase project:** create or select the production project. In **Project Settings → General**, copy the project reference for the CLI. In **Project Settings → API**, copy the project URL, publishable/anon key and service-role key into ignored `.env.local` and Vercel environment variables. The service-role key is server-only; keep the project ref, personal access token and database password out of Vercel.
+2. **Supabase CLI:** install the CLI, run `supabase login`, then run `supabase link --project-ref <SUPABASE_PROJECT_REF>` and `supabase db push`. This applies both migrations, including `btree_gist`, overlap protection, RLS, Realtime tables, storage policies and the one-minute `pg_cron` job. Run `npm run seed` once afterward. The seed does not upload photos or create guest data.
+3. **Guest Auth:** in **Authentication → URL Configuration**, set Site URL to `https://odisharetreat.com`. Add `https://odisharetreat.com/auth/callback`, `https://www.odisharetreat.com/auth/callback`, `http://localhost:3000/auth/callback`, and the Vercel preview callback pattern. Enable Email OTP/magic link. In **Authentication → Providers → Google**, enable Google and add the Supabase callback URL shown by that provider to the Google OAuth client.
+4. **Clerk admin:** copy the Clerk publishable and secret keys into `.env.local` and Vercel. Set `ADMIN_EMAILS` to the exact Clerk owner email. In Clerk, enable its native Supabase integration; in Supabase **Authentication → Third-Party Auth**, add the Clerk domain shown in Clerk. In Clerk **Users → owner → Public metadata**, set `{"role":"admin"}`. Under **Sessions → Customize session token**, add `{"metadata":"{{user.public_metadata}}"}`. The database RLS helper reads `metadata.role`, while the Next.js host desk also enforces `ADMIN_EMAILS`. This uses the native third-party integration and does not need a legacy `supabase` JWT template.
+5. **Storage and Realtime:** migration `002` creates/configures `property-images` and `chat-attachments`, removes legacy image metadata, and adds the publications for `bookings`, `conversations` and `messages`. Run the one-time Storage API cleanup in step 2 before uploading real photos. In Supabase verify both buckets and table publication membership after `db push`.
+6. **Hold expiry:** deploy the existing endpoint with `supabase functions deploy expire-holds --no-verify-jwt`. Set a strong `CRON_SECRET` with `supabase secrets set CRON_SECRET=<random-secret>`. Migration `002` schedules `expire_stale_holds()` in Postgres every minute; the Edge Function uses the same database function for an authorized manual invocation. Verify the schedule in SQL Editor with `select jobname, schedule, command from cron.job;`.
+7. **Razorpay test mode:** copy the test Key ID and Key Secret from **Razorpay Dashboard → Account & Settings → API Keys**. Set `NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_…` and `RAZORPAY_KEY_SECRET` in `.env.local` and Vercel Preview. Add this exact webhook URL in **Razorpay → Webhooks**: `https://odisharetreat.com/api/payments/webhook`. Subscribe to `payment.captured`, `payment.failed` and `refund.processed`; copy the webhook secret into `RAZORPAY_WEBHOOK_SECRET`.
+8. **Email:** optionally copy a Resend API key into `RESEND_API_KEY` and set a verified `BOOKING_FROM_EMAIL` sender for booking confirmations and invoices.
+9. **Vercel frontend:** import `parvooffice/OTA-BOOKING-PLATFORM` into Vercel, use the Next.js preset and deploy the `main` branch. Add the app runtime values from `.env.example` under **Project → Settings → Environment Variables** for Production: site URL, Supabase URL/anon key/service role key, Clerk keys, `ADMIN_EMAILS`, Razorpay keys, and optional Resend/WhatsApp settings. Set `CRON_SECRET` with Supabase Functions secrets, not Vercel. Redeploy after saving. Supabase does not host the Next.js frontend.
+10. **Domain and DNS:** add `odisharetreat.com` and `www.odisharetreat.com` under **Vercel → Project → Settings → Domains**. Vercel will show the exact records for this project. The usual records are apex `A` host `@` → `76.76.21.21` and `CNAME` host `www` → `cname.vercel-dns-0.com`; use the values displayed in your Vercel dashboard if they differ. Choose one canonical hostname and redirect the other to it. Set `NEXT_PUBLIC_SITE_URL=https://odisharetreat.com` and redeploy.
+11. **Live Razorpay:** after test-mode smoke checks pass, create/use Live API keys, change the public Key ID to `rzp_live_…`, replace `RAZORPAY_KEY_SECRET`, and set the webhook secret copied from the live webhook configuration. Keep the webhook URL and subscribed event names the same. Redeploy Vercel and make one low-value live payment before opening bookings widely.
+
+Webhook URL to paste in Razorpay: `https://odisharetreat.com/api/payments/webhook`.
+
+## Smoke test
+
+With Supabase configured, set a property's `max_guests` to at least 3, and configure Razorpay test keys. Verify: create a held booking; complete payment and confirm it through the signed webhook; attempt an overlapping booking and confirm it is rejected; send a guest-to-admin chat message; upload a PNG through `/admin`; and verify the third guest adds ₹500 per night by default (or one ₹500 fee per stay when that mode is selected). The owner can switch to live Razorpay keys only after these checks pass.
+
+## Checks
+
+```powershell
 npm test
 npm run typecheck
 npm run build
 ```
 
-The tests cover half-open booking overlap semantics, ISO date validation, Razorpay checkout and webhook signatures, and INR-to-paise conversion.
-
-## Vercel deployment
-
-Import `parvooffice/OTA-BOOKING-PLATFORM` into Vercel and keep the Next.js framework preset and default `npm run build` command. No `vercel.json` is needed. Add the required values from `.env.example` under **Project → Settings → Environment Variables**, choosing Preview and/or Production as appropriate. Set `NEXT_PUBLIC_SITE_URL` to the deployment's public URL. Configure Supabase, Clerk, Razorpay and email credentials before enabling those features; then redeploy so the build and functions receive the values.
-
-For the production domain, add `odisharetreat.com` and `www.odisharetreat.com` under **Project → Settings → Domains**. Apply the DNS records Vercel shows at the domain registrar, choose the canonical domain and redirect the other host to it, then set `NEXT_PUBLIC_SITE_URL=https://odisharetreat.com`. Add the production auth callback and Razorpay webhook URLs before taking live payments.
-
-Do not commit `.env.local`, service-role keys, Clerk secrets or Razorpay secrets.
+The test suite covers booking date rules, payment signatures, INR conversion and extra-guest pricing.

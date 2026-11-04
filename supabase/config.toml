@@ -11,8 +11,13 @@ major_version = 15
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://odisharetreat.com/**"]
+site_url = "https://odisharetreat.com"
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "https://odisharetreat.com/auth/callback",
+  "https://www.odisharetreat.com/auth/callback",
+  "https://*.vercel.app/auth/callback"
+]
 enable_signup = true
 
 [auth.email]

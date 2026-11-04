@@ -5,3 +5,4 @@ node_modules/
 coverage/
 *.tsbuildinfo
 public/maplibre-gl-worker.mjs
+supabase/.temp/

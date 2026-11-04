@@ -41,11 +41,12 @@ export async function POST(request: Request) {
   let order = (existing?.[0]?.sort_order ?? -1) + 1;
   const inserted = [];
   for (const file of files) {
-    if (!file.type.startsWith("image/") || file.size > 20 * 1024 * 1024) return NextResponse.json({ error: "Images must be valid files under 20 MB." }, { status: 400 });
+    if (file.type !== "image/png" || !file.name.toLowerCase().endsWith(".png") || file.size > 12 * 1024 * 1024) return NextResponse.json({ error: "Property images must be PNG files under 12 MiB." }, { status: 400 });
     const original = Buffer.from(await file.arrayBuffer());
-    const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
-    const originalPath = `${property.slug}/originals/${randomUUID()}.${ext}`;
-    const { error: originalError } = await service.storage.from("property-images").upload(originalPath, original, { contentType: file.type, upsert: false });
+    const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    if (original.length < pngSignature.length || !original.subarray(0, pngSignature.length).equals(pngSignature)) return NextResponse.json({ error: `${file.name} is not a PNG image.` }, { status: 415 });
+    const originalPath = `${property.slug}/originals/${randomUUID()}.png`;
+    const { error: originalError } = await service.storage.from("property-images").upload(originalPath, original, { contentType: "image/png", upsert: false });
     if (originalError) return NextResponse.json({ error: "The original image could not be stored." }, { status: 500 });
     let display: Buffer; let thumb: Buffer;
     try {

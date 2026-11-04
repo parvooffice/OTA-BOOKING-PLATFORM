@@ -25,6 +25,7 @@ export function PropertyGallery({ slug, place, images, caption }: { slug: string
 
   return (
     <>
+      {images.length === 0 ? <div className="grid min-h-[280px] place-items-center border border-dashed border-ink/20 bg-[#e9e1d2] p-8 text-center"><p className="font-display text-2xl text-ink/65">Photos will appear here</p></div> : <>
       <motion.div layoutId={`map-card-${slug}`} className="grid gap-3 md:grid-cols-[1.4fr_.6fr]">
         <button type="button" data-cursor="View" onClick={() => setActive(0)} className="group relative aspect-[1.05] overflow-hidden bg-[#ddd0ba] text-left md:aspect-[1.22]" aria-label={`Open ${place} photo gallery`}>
           <motion.div layoutId={`property-image-${slug}-0`} className="absolute inset-0">
@@ -47,6 +48,7 @@ export function PropertyGallery({ slug, place, images, caption }: { slug: string
           <div className="flex justify-center gap-2 overflow-x-auto px-4 pb-5">{images.map((image, index) => <button key={image} onClick={() => setActive(index)} aria-label={`Show photo ${index + 1}`} aria-current={active === index} className={`relative h-[52px] w-[72px] shrink-0 overflow-hidden border-2 ${active === index ? "border-turmeric opacity-100" : "border-transparent opacity-55 hover:opacity-100"}`}><Image src={image} alt="" fill sizes="72px" className="object-cover" /></button>)}</div>
         </motion.div>}
       </AnimatePresence>
+      </>}
     </>
   );
 }

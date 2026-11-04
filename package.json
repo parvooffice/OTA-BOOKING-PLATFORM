@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "test": "tsx --test tests/*.test.ts",
     "seed": "tsx scripts/seed.ts",
-    "assets:placeholders": "tsx scripts/generate-placeholders.ts",
+    "cleanup:property-images": "tsx scripts/cleanup-property-images.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

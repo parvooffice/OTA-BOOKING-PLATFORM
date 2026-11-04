@@ -1,8 +1,32 @@
 import { loadEnvConfig } from "@next/env";
 import { createClient } from "@supabase/supabase-js";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { properties } from "@/lib/properties";
+
+type SeedProperty = {
+  slug: string; name: string; lat: number; lng: number; district: string; address: string;
+  tagline: string; description: string; base_price_inr: number; cleaning_fee_inr: number;
+  max_guests: number; included_guests: number; extra_guest_fee_inr: number;
+  extra_guest_fee_mode: "per_night" | "per_stay"; bedrooms: number; bathrooms: number;
+  amenities: string[]; house_rules: string[]; checkin_start: string; checkin_end: string;
+  checkout_latest: string; is_active: boolean;
+};
+
+const properties: SeedProperty[] = [
+  {
+    slug: "puri", name: "Puri", lat: 19.8135, lng: 85.8312, district: "Puri",
+    address: "", tagline: "", description: "", base_price_inr: 0, cleaning_fee_inr: 0,
+    max_guests: 2, included_guests: 2, extra_guest_fee_inr: 500, extra_guest_fee_mode: "per_night",
+    bedrooms: 0, bathrooms: 0, amenities: [], house_rules: [],
+    checkin_start: "10:00", checkin_end: "20:00", checkout_latest: "09:00", is_active: true
+  },
+  {
+    // Initial village pin carried forward from the former second map location; edit it in /admin.
+    slug: "village-retreat", name: "Village Retreat", lat: 19.7168, lng: 85.3205, district: "Odisha",
+    address: "", tagline: "", description: "", base_price_inr: 0, cleaning_fee_inr: 0,
+    max_guests: 2, included_guests: 2, extra_guest_fee_inr: 500, extra_guest_fee_mode: "per_night",
+    bedrooms: 0, bathrooms: 0, amenities: [], house_rules: [],
+    checkin_start: "10:00", checkin_end: "20:00", checkout_latest: "09:00", is_active: true
+  }
+];
 
 async function main() {
   loadEnvConfig(process.cwd());
@@ -12,36 +36,14 @@ async function main() {
   const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 
   for (const property of properties) {
-    const payload = {
-      slug: property.slug, name: property.name, tagline: property.tagline, description: property.description,
-      lat: property.coordinates[1], lng: property.coordinates[0], address: property.place, district: property.district,
-      base_price_inr: property.basePriceInr, cleaning_fee_inr: property.cleaningFeeInr, max_guests: property.maxGuests,
-      bedrooms: property.bedrooms, bathrooms: property.bathrooms, amenities: property.amenities,
-      house_rules: property.houseRules, is_active: true
-    };
-    const { data: row, error: propertyError } = await supabase.from("properties").upsert(payload, { onConflict: "slug" }).select("id,slug").single();
-    if (propertyError || !row) throw new Error(`Could not seed ${property.slug}: ${propertyError?.message ?? "missing property row"}`);
-
-    const photoRows = [];
-    for (let order = 0; order < 3; order++) {
-      const sourcePath = order === 0 ? `public/properties/${property.slug}/hero.png` : `public/properties/${property.slug}/gallery/0${order}.png`;
-      const thumbPath = `public/properties/${property.slug}/thumbs/0${order + 1}.png`;
-      const source = await readFile(path.join(process.cwd(), sourcePath));
-      const thumb = await readFile(path.join(process.cwd(), thumbPath));
-      const displayPath = `${property.slug}/${order === 0 ? "hero.png" : `gallery/0${order}.png`}`;
-      const storageThumbPath = `${property.slug}/thumbs/0${order + 1}.png`;
-      const originalPath = `${property.slug}/originals/0${order + 1}.png`;
-      for (const [objectPath, data] of [[displayPath, source], [storageThumbPath, thumb], [originalPath, source]] as const) {
-        const { error } = await supabase.storage.from("property-images").upload(objectPath, data, { contentType: "image/png", upsert: true });
-        if (error) throw new Error(`Could not upload ${objectPath}: ${error.message}`);
-      }
-      photoRows.push({ property_id: row.id, storage_path: displayPath, thumb_path: storageThumbPath, original_path: originalPath, alt: `${property.place} stay, photo ${order + 1}`, sort_order: order, is_cover: order === 0, edit_params: {} });
-    }
-    const { error: imageError } = await supabase.from("property_images").upsert(photoRows, { onConflict: "property_id,sort_order" });
-    if (imageError) throw new Error(`Could not seed ${property.slug} photos: ${imageError.message}`);
-    console.log(`Seeded ${property.name} · ${property.place}`);
+    const { data: existing, error: lookupError } = await supabase.from("properties").select("id,slug,name").eq("slug", property.slug).maybeSingle();
+    if (lookupError) throw new Error(`Could not look up ${property.slug}: ${lookupError.message}`);
+    if (existing) { console.log(`Already exists: ${existing.name} (${existing.slug})`); continue; }
+    const { data, error } = await supabase.from("properties").insert(property).select("id,slug,name").single();
+    if (error || !data) throw new Error(`Could not seed ${property.slug}: ${error?.message ?? "missing property row"}`);
+    console.log(`Created: ${data.name} (${data.slug})`);
   }
-  console.log("Done. Replace the clearly labeled Property 1–4 copy and generated PNG illustrations before launch.");
+  console.log("Seeded only the two editable property rows. No users, bookings, messages or photos were created.");
 }
 
 void main().catch((error) => { console.error(error); process.exitCode = 1; });

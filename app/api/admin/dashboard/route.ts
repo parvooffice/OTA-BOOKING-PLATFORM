@@ -15,8 +15,8 @@ export async function GET(request: Request) {
   const today = indiaDate(new Date());
   const firstOfMonth = `${today.slice(0, 7)}-01`;
   const [{ data: properties }, { data: bookings }, { data: payments }, { data: conversations }, { data: settings }, { data: seasonalRates }, { data: blockedDates }] = await Promise.all([
-    service.from("properties").select("id,slug,name,tagline,description,lat,lng,address,district,base_price_inr,cleaning_fee_inr,max_guests,bedrooms,bathrooms,amenities,house_rules,checkin_start,checkin_end,checkout_latest,is_active,created_at").order("created_at"),
-    service.from("bookings").select("id,property_id,guest_id,checkin_date,checkout_date,expected_arrival_time,custom_checkin_time,custom_checkout_time,guests,status,subtotal_inr,taxes_inr,total_inr,amount_paid_inr,hold_expires_at,created_at,properties(name,slug,district),profiles(full_name,phone)").order("checkin_date").limit(1000),
+    service.from("properties").select("id,slug,name,tagline,description,lat,lng,address,district,base_price_inr,cleaning_fee_inr,max_guests,included_guests,extra_guest_fee_inr,extra_guest_fee_mode,bedrooms,bathrooms,amenities,house_rules,checkin_start,checkin_end,checkout_latest,is_active,created_at").order("created_at"),
+    service.from("bookings").select("id,property_id,guest_id,guest_id_name,guest_phone,extra_guests,extra_guest_total_inr,checkin_date,checkout_date,expected_arrival_time,custom_checkin_time,custom_checkout_time,guests,status,subtotal_inr,taxes_inr,total_inr,amount_paid_inr,hold_expires_at,created_at,properties(name,slug,district),profiles(full_name,phone)").order("checkin_date").limit(1000),
     service.from("payments").select("id,booking_id,razorpay_order_id,razorpay_payment_id,status,amount_inr,refunded_inr,method,created_at").order("created_at", { ascending: false }).limit(500),
     service.from("conversations").select("id,guest_id,property_id,booking_id,subject,status,last_message_at,created_at,profiles(full_name),properties(name,slug)").order("last_message_at", { ascending: false }).limit(200),
     service.from("admin_settings").select("key,value"),
