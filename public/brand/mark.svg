@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="60" fill="#f5f0e7"/>
+  <circle cx="60" cy="60" r="49" stroke="#a64d37" stroke-width="2"/>
+  <circle cx="60" cy="60" r="39" stroke="#a64d37" stroke-width="1" stroke-dasharray="1.4 3.3"/>
+  <circle cx="60" cy="60" r="7" fill="#a64d37"/>
+  <g stroke="#a64d37" stroke-width="1.5" fill="#d4a23d">
+    <path d="M60 12v41"/><path d="M60 12v41" transform="rotate(30 60 60)"/><path d="M60 12v41" transform="rotate(60 60 60)"/><path d="M60 12v41" transform="rotate(90 60 60)"/><path d="M60 12v41" transform="rotate(120 60 60)"/><path d="M60 12v41" transform="rotate(150 60 60)"/><path d="M60 12v41" transform="rotate(180 60 60)"/><path d="M60 12v41" transform="rotate(210 60 60)"/><path d="M60 12v41" transform="rotate(240 60 60)"/><path d="M60 12v41" transform="rotate(270 60 60)"/><path d="M60 12v41" transform="rotate(300 60 60)"/><path d="M60 12v41" transform="rotate(330 60 60)"/>
+    <circle cx="60" cy="21" r="2.5"/><circle cx="60" cy="21" r="2.5" transform="rotate(30 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(60 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(90 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(120 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(150 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(180 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(210 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(240 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(270 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(300 60 60)"/><circle cx="60" cy="21" r="2.5" transform="rotate(330 60 60)"/>
+  </g>
+</svg>
