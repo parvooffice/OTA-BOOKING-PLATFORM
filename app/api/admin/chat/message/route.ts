@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (guest.user?.email) {
       const property = conversation.properties as unknown as { name: string } | null;
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({ from: process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>", to: guest.user.email, subject: `A note from your host · Odisha Retreat`, html: `<p>Your host sent you a message${property?.name ? ` about ${escapeHtml(property.name)}` : ""}.</p><p>${escapeHtml(parsed.data.body.slice(0, 400))}</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://odisharetreat.com"}/account">Open your conversation</a></p>` });
+      await resend.emails.send({ from: process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>", to: guest.user.email, ...(process.env.BOOKING_REPLY_TO ? { replyTo: process.env.BOOKING_REPLY_TO } : {}), subject: `A note from your host · Odisha Retreat`, html: `<p>Your host sent you a message${property?.name ? ` about ${escapeHtml(property.name)}` : ""}.</p><p>${escapeHtml(parsed.data.body.slice(0, 400))}</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://odisharetreat.com"}/account">Open your conversation</a></p>` });
     }
   }
   return NextResponse.json({ messageId: message.id }, { status: 201 });

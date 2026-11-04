@@ -67,6 +67,7 @@ export async function sendBookingConfirmation(service: SupabaseClient, bookingId
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from, to: guestEmail, subject: `Your stay is confirmed · Odisha Retreat`,
+    ...(process.env.BOOKING_REPLY_TO ? { replyTo: process.env.BOOKING_REPLY_TO } : {}),
     html: `<p>Dear ${escapeHtml(detail.guestName || "guest")},</p><p>Your dates at ${escapeHtml(detail.propertyName)} are confirmed. We’ll be in touch with the arrival details closer to your stay.</p><p><strong>${detail.checkin_date} to ${detail.checkout_date}</strong></p><p>Guest mobile: ${escapeHtml(detail.guestPhone)}</p><p>Paid: INR ${detail.amount_paid_inr.toLocaleString("en-IN")} · Booking total: INR ${detail.total_inr.toLocaleString("en-IN")}</p><p>Warmly,<br>Your host at Odisha Retreat</p>`,
     attachments: [{ filename: `Odisha-Retreat-invoice-${bookingId.slice(0, 8)}.pdf`, content: invoice }]
   });

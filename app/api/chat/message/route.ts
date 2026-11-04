@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     await resend.emails.send({
       from: process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>",
       to: process.env.ADMIN_EMAILS.split(",").map((email) => email.trim()).filter(Boolean),
+      ...(process.env.BOOKING_REPLY_TO ? { replyTo: process.env.BOOKING_REPLY_TO } : {}),
       subject: `A guest wrote to you · ${property?.name ?? "Odisha Retreat"}`,
       html: `<p>${escapeHtml(user.email ?? "A guest")} sent a note${property?.name ? ` about ${escapeHtml(property.name)}` : ""}.</p><p>${escapeHtml(parsed.data.body.slice(0, 500))}</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://odisharetreat.com"}/admin">Open the host inbox</a></p>`
     });
