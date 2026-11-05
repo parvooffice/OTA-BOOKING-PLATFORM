@@ -6,7 +6,9 @@ const setupOwnerEmails = [
   "pravomishri98@gmail.com",
   "retreatodisha@gmail.com",
   "retreat.odisha11@gmail.com",
-  "prabhudattamishra600@gmail.com"
+  "prabhudattamishra600@gmail.com",
+  "villageretreat.puri@gmail.com",
+  "parvo.office@gmail.com"
 ];
 
 function getAllowedAdminEmails() {
