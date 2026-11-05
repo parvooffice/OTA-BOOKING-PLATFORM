@@ -17,12 +17,12 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: "Message could not be sent." }, { status: 500 });
   await service.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", parsed.data.conversationId);
   const { data: conversation } = await service.from("conversations").select("guest_id,subject,properties(name)").eq("id", parsed.data.conversationId).single();
-  if (conversation && process.env.RESEND_API_KEY) {
+  if (conversation && process.env.RESEND_API_KEY && process.env.BOOKING_FROM_EMAIL) {
     const { data: guest } = await service.auth.admin.getUserById(conversation.guest_id);
     if (guest.user?.email) {
       const property = conversation.properties as unknown as { name: string } | null;
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({ from: process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>", to: guest.user.email, ...(process.env.BOOKING_REPLY_TO ? { replyTo: process.env.BOOKING_REPLY_TO } : {}), subject: `A note from your host · Odisha Retreat`, html: `<p>Your host sent you a message${property?.name ? ` about ${escapeHtml(property.name)}` : ""}.</p><p>${escapeHtml(parsed.data.body.slice(0, 400))}</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://odisharetreat.com"}/account">Open your conversation</a></p>` });
+      await resend.emails.send({ from: process.env.BOOKING_FROM_EMAIL, to: guest.user.email, ...(process.env.BOOKING_REPLY_TO ? { replyTo: process.env.BOOKING_REPLY_TO } : {}), subject: `A note from your host · Odisha Retreat`, html: `<p>Your host sent you a message${property?.name ? ` about ${escapeHtml(property.name)}` : ""}.</p><p>${escapeHtml(parsed.data.body.slice(0, 400))}</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://ota-booking-platform-nine.vercel.app"}/account">Open your conversation</a></p>` });
     }
   }
   return NextResponse.json({ messageId: message.id }, { status: 201 });

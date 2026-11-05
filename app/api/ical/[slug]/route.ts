@@ -13,10 +13,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     supabase.from("bookings").select("id,checkin_date,checkout_date").eq("property_id", property.id).in("status", ["held", "confirmed"]).or(`status.eq.confirmed,hold_expires_at.gt.${new Date().toISOString()}`),
     supabase.from("blocked_dates").select("range").eq("property_id", property.id)
   ]);
-  const events = (bookings ?? []).map((booking) => `BEGIN:VEVENT\r\nUID:${booking.id}@odisharetreat.com\r\nDTSTAMP:${icalDate(new Date().toISOString().slice(0, 10))}T000000Z\r\nDTSTART;VALUE=DATE:${icalDate(booking.checkin_date)}\r\nDTEND;VALUE=DATE:${icalDate(booking.checkout_date)}\r\nSUMMARY:Reserved\r\nEND:VEVENT`);
+  const events = (bookings ?? []).map((booking) => `BEGIN:VEVENT\r\nUID:${booking.id}@ota-booking-platform-nine.vercel.app\r\nDTSTAMP:${icalDate(new Date().toISOString().slice(0, 10))}T000000Z\r\nDTSTART;VALUE=DATE:${icalDate(booking.checkin_date)}\r\nDTEND;VALUE=DATE:${icalDate(booking.checkout_date)}\r\nSUMMARY:Reserved\r\nEND:VEVENT`);
   for (const block of blocks ?? []) {
     const match = /^\[(\d{4}-\d{2}-\d{2}),(\d{4}-\d{2}-\d{2})\)$/.exec(block.range);
-    if (match) events.push(`BEGIN:VEVENT\r\nUID:${slug}-${match[1]}@odisharetreat.com\r\nDTSTAMP:${icalDate(new Date().toISOString().slice(0, 10))}T000000Z\r\nDTSTART;VALUE=DATE:${icalDate(match[1])}\r\nDTEND;VALUE=DATE:${icalDate(match[2])}\r\nSUMMARY:Unavailable\r\nEND:VEVENT`);
+    if (match) events.push(`BEGIN:VEVENT\r\nUID:${slug}-${match[1]}@ota-booking-platform-nine.vercel.app\r\nDTSTAMP:${icalDate(new Date().toISOString().slice(0, 10))}T000000Z\r\nDTSTART;VALUE=DATE:${icalDate(match[1])}\r\nDTEND;VALUE=DATE:${icalDate(match[2])}\r\nSUMMARY:Unavailable\r\nEND:VEVENT`);
   }
   const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Odisha Retreat//Property Calendar//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${escapeIcal(property.name)}`, ...events, "END:VCALENDAR"].join("\r\n");
   return new Response(body, { headers: { "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": `attachment; filename="${slug}.ics"`, "Cache-Control": "no-store" } });

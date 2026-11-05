@@ -50,7 +50,7 @@ export async function createInvoicePdf(booking: InvoiceDetails) {
 }
 
 export async function sendBookingConfirmation(service: SupabaseClient, bookingId: string) {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.RESEND_API_KEY || !process.env.BOOKING_FROM_EMAIL) return;
   const { data: booking } = await service.from("bookings").select("id,guest_id,guest_id_name,guest_phone,created_at,checkin_date,checkout_date,guests,subtotal_inr,taxes_inr,total_inr,amount_paid_inr,properties(name,district)").eq("id", bookingId).maybeSingle();
   if (!booking) return;
   const [{ data: guestResult }, { data: settings }] = await Promise.all([
@@ -63,7 +63,7 @@ export async function sendBookingConfirmation(service: SupabaseClient, bookingId
   const settingsMap = Object.fromEntries((settings ?? []).map((item) => [item.key, item.value]));
   const detail: InvoiceDetails = { ...booking, guestName: booking.guest_id_name, guestPhone: booking.guest_phone, guestEmail, propertyName: property?.name ?? "Odisha Retreat stay", district: property?.district ?? "Odisha", legalName: String(settingsMap.invoice_legal_name ?? ""), gstin: String(settingsMap.invoice_gstin ?? ""), legalAddress: String(settingsMap.invoice_address ?? ""), gstPercent: Number(settingsMap.gst_percent ?? 5) };
   const invoice = await createInvoicePdf(detail);
-  const from = process.env.BOOKING_FROM_EMAIL || "Odisha Retreat <bookings@odisharetreat.com>";
+  const from = process.env.BOOKING_FROM_EMAIL;
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from, to: guestEmail, subject: `Your stay is confirmed · Odisha Retreat`,

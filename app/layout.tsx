@@ -3,7 +3,7 @@ import { SiteProviders } from "@/components/site-providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://odisharetreat.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ota-booking-platform-nine.vercel.app"),
   title: { default: "Odisha Retreat — a gentler kind of stay", template: "%s · Odisha Retreat" },
   description: "Two independent stays in Odisha: a Puri coastal home and Village Retreat.",
   openGraph: { type: "website", title: "Odisha Retreat", description: "Two owner-run stays in Odisha." },

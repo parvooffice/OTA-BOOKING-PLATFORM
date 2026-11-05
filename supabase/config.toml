@@ -2,32 +2,58 @@ project_id = "odisha-retreat"
 
 [api]
 enabled = true
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-major_version = 15
+major_version = 17
+
+[db.pooler]
+default_pool_size = 15
+max_client_conn = 200
 
 [auth]
 enabled = true
-site_url = "https://odisharetreat.com"
+site_url = "https://ota-booking-platform-nine.vercel.app"
 additional_redirect_urls = [
   "http://localhost:3000/auth/callback",
-  "https://odisharetreat.com/auth/callback",
-  "https://www.odisharetreat.com/auth/callback",
+  "https://ota-booking-platform-nine.vercel.app/",
+  "https://ota-booking-platform-nine.vercel.app/**",
+  "https://ota-booking-platform-prabhudattamishra600-1945.vercel.app/",
+  "https://ota-booking-platform-prabhudattamishra600-1945.vercel.app/**",
+  "https://ota-*-booking-platform-prabhudattamishra600-1945.vercel.app",
+  "https://ota-*-booking-platform-prabhudattamishra600-1945.vercel.app/**",
+  "https://ota-booking-platform-nine.vercel.app/auth/callback",
+  "https://ota-booking-platform-prabhudattamishra600-1945.vercel.app/auth/callback",
   "https://*.vercel.app/auth/callback"
 ]
 enable_signup = true
 
+[auth.third_party.clerk]
+enabled = true
+domain = "https://simple-louse-567.clerk.accounts.dev"
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.sms]
+enable_confirmations = true
+
 [auth.email]
-enable_signup = true
+enabled = true
 double_confirm_changes = true
 enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
 
 [storage]
 enabled = true
-file_size_limit = "12MiB"
+file_size_limit = "50MiB"
+
+[storage.vector]
+enabled = false
 
 [functions.expire-holds]
 verify_jwt = false

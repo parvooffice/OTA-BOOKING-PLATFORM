@@ -65,7 +65,7 @@ export default async function HomePage() {
           <div className="ikat-rule" />
         </section>
 
-        <section className="px-5 py-20 md:px-10 md:py-28"><div className="mx-auto grid max-w-[1440px] gap-8 border-l-[3px] border-laterite pl-6 md:grid-cols-[1fr_auto] md:items-center md:pl-10"><div><p className="eyebrow text-laterite">We’ll be right here</p><p className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] md:text-6xl">Need a little help finding the right stay?</p><p className="mt-4 text-sm text-ink/60">Tell us what you’re looking for. A real person will write back.</p></div><a className="button-ink w-fit" href="mailto:hello@odisharetreat.com">Write to your host <ArrowUpRight size={16} /></a></div></section>
+        <section className="px-5 py-20 md:px-10 md:py-28"><div className="mx-auto grid max-w-[1440px] gap-8 border-l-[3px] border-laterite pl-6 md:grid-cols-[1fr_auto] md:items-center md:pl-10"><div><p className="eyebrow text-laterite">We’ll be right here</p><p className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] md:text-6xl">Need a little help finding the right stay?</p><p className="mt-4 text-sm text-ink/60">Tell us what you’re looking for. A real person will write back.</p></div><a className="button-ink w-fit" href="mailto:retreatodisha@gmail.com">Write to your host <ArrowUpRight size={16} /></a></div></section>
       </main>
       <SiteFooter />
     </>
