@@ -17,6 +17,9 @@ export type RetreatProperty = {
   includedGuests: number;
   extraGuestFeeInr: number;
   extraGuestFeeMode: ExtraGuestFeeMode;
+  checkinStart: string;
+  checkinEnd: string;
+  checkoutLatest: string;
   bedrooms: number;
   bathrooms: number;
   amenities: string[];

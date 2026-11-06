@@ -33,7 +33,7 @@ export function calculateStayQuote(input: {
   const nights = Math.round((Date.parse(`${input.checkout}T00:00:00Z`) - Date.parse(`${input.checkin}T00:00:00Z`)) / 86_400_000);
   if (!Number.isInteger(nights) || nights < 1) throw new Error("Check-out must be after check-in.");
   if (!Number.isInteger(input.guests) || input.guests < 1 || input.guests > input.property.max_guests) throw new Error("Guest count exceeds this property capacity.");
-  if (!Number.isInteger(input.property.included_guests) || input.property.included_guests < 0 || input.property.included_guests > input.property.max_guests) throw new Error("Included guest count is invalid.");
+  if (!Number.isInteger(input.property.included_guests) || input.property.included_guests < 1 || input.property.included_guests > input.property.max_guests) throw new Error("Included guest count is invalid.");
   if (!Number.isInteger(input.property.extra_guest_fee_inr) || input.property.extra_guest_fee_inr < 0) throw new Error("Extra guest fee is invalid.");
   if (!Number.isFinite(input.taxPercent) || input.taxPercent < 0 || input.taxPercent > 100) throw new Error("Tax percent is invalid.");
 

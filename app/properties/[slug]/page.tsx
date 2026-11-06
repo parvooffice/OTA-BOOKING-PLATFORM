@@ -7,11 +7,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { PropertyGallery } from "@/components/property-gallery";
 import { PropertyBookingPanel } from "@/components/property-booking-panel";
 import { LocationMap } from "@/components/location-map";
-import { getPropertyData } from "@/lib/property-data";
+import { getProperty } from "@/lib/property-data";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const property = await getPropertyData(slug);
+  const property = await getProperty(slug);
   if (!property) return { title: "Stay not found" };
   return {
     title: `${property.place} — a private Odisha stay`,
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const property = await getPropertyData(slug);
+  const property = await getProperty(slug);
   if (!property) notFound();
   const lodgingBusiness = {
     "@context": "https://schema.org", "@type": "LodgingBusiness", name: `${property.name} · Odisha Retreat`,

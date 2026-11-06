@@ -38,6 +38,15 @@ Before opening Razorpay, the guest saves the name shown on their government ID, 
 
 The host controls the base nightly price, maximum guests, **COMPLIMENTARY TILL** guest count, per-extra-guest fee and per-night/per-stay fee mode under **/admin → Properties → Pricing**. Set each property's maximum to the real allowed capacity before accepting bookings; it must be at least the complimentary guest count. The server recalculates seasonal nightly price, extra guests, cleaning and GST when it creates the Razorpay order; the browser never supplies the payable amount.
 
+## How host-editable data flows
+
+1. The host edits a property in `/admin → Properties`.
+2. The form sends typed rupee values to `PUT /api/admin/properties` using the Clerk-authorised host session.
+3. The API validates the fields, updates Supabase, checks that a row was returned, and reloads the saved row before showing success.
+4. Public pages use `getProperties()` / `getProperty(slug)` from `lib/property-data.ts`, selecting the same pricing columns from active Supabase rows.
+5. Booking quote and order routes read pricing directly from Supabase on the server and recompute the total.
+6. `npm run check:data` checks both properties for a positive price, guest rules, timings, active state and a cover image before deployment.
+
 ## Add property photos
 
 1. Sign in to `/admin`, open **Image manager**, and choose Puri or Village Retreat.

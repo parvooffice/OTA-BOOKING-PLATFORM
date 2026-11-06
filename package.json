@@ -12,7 +12,8 @@
     "test": "tsx --test tests/*.test.ts",
     "seed": "tsx scripts/seed.ts",
     "cleanup:property-images": "tsx scripts/cleanup-property-images.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:data": "tsx scripts/check-data.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.24",

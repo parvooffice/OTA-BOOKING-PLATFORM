@@ -7,6 +7,8 @@ import { getProperties } from "@/lib/property-data";
 import { HomeStory } from "@/components/home-story";
 import { HomeHeroStays } from "@/components/home-hero-stays";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const properties = await getProperties();
   return (

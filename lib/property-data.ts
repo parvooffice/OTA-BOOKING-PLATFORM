@@ -16,6 +16,9 @@ type DbProperty = {
   included_guests: number;
   extra_guest_fee_inr: number;
   extra_guest_fee_mode: "per_night" | "per_stay";
+  checkin_start: string;
+  checkin_end: string;
+  checkout_latest: string;
   bedrooms: number;
   bathrooms: number;
   amenities: string[];
@@ -29,7 +32,7 @@ export async function getProperties(): Promise<RetreatProperty[]> {
   if (!supabase) return [];
 
   const [{ data: rows, error }, { data: images, error: imageError }] = await Promise.all([
-    supabase.from("properties").select("id,slug,name,tagline,description,lat,lng,district,base_price_inr,cleaning_fee_inr,max_guests,included_guests,extra_guest_fee_inr,extra_guest_fee_mode,bedrooms,bathrooms,amenities,house_rules").eq("is_active", true).order("created_at"),
+    supabase.from("properties").select("id,slug,name,tagline,description,lat,lng,district,base_price_inr,cleaning_fee_inr,max_guests,included_guests,extra_guest_fee_inr,extra_guest_fee_mode,checkin_start,checkin_end,checkout_latest,bedrooms,bathrooms,amenities,house_rules").eq("is_active", true).order("created_at"),
     supabase.from("property_images").select("id,property_id,storage_path,sort_order,is_cover").order("sort_order")
   ]);
   if (error) throw new Error(`Properties could not be loaded: ${error.message}`);
@@ -58,6 +61,9 @@ export async function getProperties(): Promise<RetreatProperty[]> {
       includedGuests: row.included_guests,
       extraGuestFeeInr: row.extra_guest_fee_inr,
       extraGuestFeeMode: row.extra_guest_fee_mode,
+      checkinStart: row.checkin_start,
+      checkinEnd: row.checkin_end,
+      checkoutLatest: row.checkout_latest,
       bedrooms: row.bedrooms,
       bathrooms: row.bathrooms,
       amenities: row.amenities ?? [],
@@ -68,7 +74,9 @@ export async function getProperties(): Promise<RetreatProperty[]> {
   });
 }
 
-export async function getPropertyData(slug: string) {
+export async function getProperty(slug: string) {
   const list = await getProperties();
   return list.find((property) => property.slug === slug);
 }
+
+export const getPropertyData = getProperty;

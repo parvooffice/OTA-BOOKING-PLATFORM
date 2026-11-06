@@ -11,6 +11,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, ChevronDown, Minus, Plus } from
 import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { localDateKey } from "@/lib/format";
+import { formatIncludedGuests, formatStartingPrice } from "@/lib/property-presentation";
 import type { RetreatProperty } from "@/lib/properties";
 
 type Block = { checkin_date: string; checkout_date: string };
@@ -85,7 +86,7 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
             <p className="eyebrow text-[.52rem] text-laterite">{property.slug === "puri" ? "PURI · ODISHA" : `${property.place} · ${property.district}`}</p>
             <div className="mt-1 flex items-end justify-between gap-2">
               <h2 className="font-display text-[clamp(1.35rem,2.4vw,2.1rem)] leading-none text-ink">{property.name}</h2>
-              <span className="shrink-0 text-right font-display text-sm text-ink/60">{property.basePriceInr > 0 ? `₹${property.basePriceInr.toLocaleString("en-IN")}` : "Rates soon"}<small className="block font-sans text-[8px]">{property.basePriceInr > 0 ? "per night" : "set by host"}</small></span>
+              <span className="shrink-0 text-right font-display text-sm text-ink/60">{formatStartingPrice(property.basePriceInr)}<small className="block font-sans text-[8px]">{property.basePriceInr > 0 ? `per night · ${formatIncludedGuests(property.includedGuests)}` : "set by host"}</small></span>
             </div>
           </div>
         </Link>
@@ -142,7 +143,7 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
       </div>
       <p className="mt-2 text-[10px] text-ink/50">{selected.includedGuests} guests included · up to {selected.maxGuests} guests</p>
       {calendarOpen && <div className="absolute left-0 right-0 top-full z-40 mt-2 border border-ink/15 bg-[#fbf8f1] p-3 shadow-[0_18px_50px_rgba(42,33,26,.2)]"><div className="flex items-center justify-between px-2"><p className="eyebrow text-laterite">Availability · {selected.name}</p><button type="button" onClick={() => setCalendarOpen(false)} className="text-xs text-ink/50">Close</button></div><DayPicker mode="range" selected={range} onSelect={(next) => { setRange(next); setPreviewDate(undefined); if (next?.from && next.to) setCalendarOpen(false); }} onDayMouseEnter={(date) => { if (range?.from && !range.to) setPreviewDate(date); }} onDayMouseLeave={() => setPreviewDate(undefined)} modifiers={{ preview: previewMatcher }} modifiersClassNames={{ selected: "booking-selected", range_start: "booking-range-start", range_end: "booking-range-end", range_middle: "booking-range-middle", preview: "booking-preview", disabled: "booking-disabled" }} excludeDisabled numberOfMonths={1} disabled={[{ before: startOfToday() }, ...blockedDays]} showOutsideDays className="booking-calendar" /></div>}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="text-[10px] text-ink/50"><p>Check-in 10 AM to 8 PM · Check-out by 9 AM</p>{nights > 0 && <p className="mt-1 font-semibold text-ink/70">{nights} {nights === 1 ? "night" : "nights"}</p>}</div><button type="button" onClick={continueToStay} disabled={!range?.from || !range.to} className="button-ink !min-h-10 !px-4 !text-xs disabled:cursor-not-allowed disabled:opacity-45">Check availability <ArrowRight size={14} /></button></div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="text-[10px] text-ink/50"><p>Check-in {timeLabel(selected.checkinStart)} to {timeLabel(selected.checkinEnd)} · Check-out by {timeLabel(selected.checkoutLatest)}</p>{nights > 0 && <p className="mt-1 font-semibold text-ink/70">{nights} {nights === 1 ? "night" : "nights"}</p>}</div><button type="button" onClick={continueToStay} disabled={!range?.from || !range.to} className="button-ink !min-h-10 !px-4 !text-xs disabled:cursor-not-allowed disabled:opacity-45">Check availability <ArrowRight size={14} /></button></div>
     </div>
   );
 
@@ -151,4 +152,9 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
 
 function DateField({ label, date, onClick }: { label: string; date?: Date; onClick: () => void }) {
   return <button type="button" onClick={onClick} className="flex min-h-[52px] items-center justify-between border border-ink/15 px-3 py-2 text-left hover:border-laterite"><span><span className="block text-[9px] uppercase tracking-[.16em] text-ink/45">{label}</span><span className="mt-1 block text-xs text-ink/70">{date ? `${label}: ${format(date, "EEE, d MMM")}` : "Choose a date"}</span></span><CalendarDays size={15} className="text-laterite" /></button>;
+}
+
+function timeLabel(value: string) {
+  const hour = Number(value.slice(0, 2));
+  return `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`;
 }

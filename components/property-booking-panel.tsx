@@ -12,7 +12,7 @@ import { formatINR, localDateKey } from "@/lib/format";
 type Block = { checkin_date: string; checkout_date: string };
 type Quote = { nights: number; guests: number; extra_guests: number; base_total_inr: number; extra_guest_total_inr: number; cleaning_fee_inr: number; subtotal_inr: number; tax_percent: number; taxes_inr: number; total_inr: number };
 
-export function PropertyBookingPanel({ property }: { property: { id: string; slug: string; basePriceInr: number; cleaningFeeInr: number; maxGuests: number; includedGuests: number; extraGuestFeeInr: number; extraGuestFeeMode: "per_night" | "per_stay" } }) {
+export function PropertyBookingPanel({ property }: { property: { id: string; slug: string; basePriceInr: number; cleaningFeeInr: number; maxGuests: number; includedGuests: number; extraGuestFeeInr: number; extraGuestFeeMode: "per_night" | "per_stay"; checkinStart: string; checkinEnd: string; checkoutLatest: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialCheckin = searchParams.get("checkin");
@@ -78,7 +78,7 @@ export function PropertyBookingPanel({ property }: { property: { id: string; slu
       <label className="mt-4 flex items-center justify-between border-y border-ink/10 py-4"><span className="flex items-center gap-2 text-sm"><UsersRound size={16} className="text-laterite" /> Guests</span><select value={guests} onChange={(event) => setGuests(Number(event.target.value))} className="bg-transparent text-sm outline-none" aria-label="Number of guests">{Array.from({ length: property.maxGuests }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1} {index === 0 ? "guest" : "guests"}</option>)}</select></label>
       {nights > 0 && <div className="grid gap-2 py-4 text-sm">{quote ? <><div className="flex justify-between"><span className="text-ink/60">Base ({property.includedGuests} guests included) · {nights} {nights === 1 ? "night" : "nights"}</span><span>{formatINR(quote.base_total_inr)}</span></div>{quote.extra_guests > 0 && <div className="flex justify-between gap-3"><span className="text-ink/60">Extra guests: {quote.extra_guests} × {formatINR(property.extraGuestFeeInr)}{property.extraGuestFeeMode === "per_night" ? ` × ${nights} ${nights === 1 ? "night" : "nights"}` : " × 1 stay"}</span><span>{formatINR(quote.extra_guest_total_inr)}</span></div>}<div className="flex justify-between"><span className="text-ink/60">Cleaning</span><span>{formatINR(quote.cleaning_fee_inr)}</span></div><div className="flex justify-between"><span className="text-ink/60">GST ({quote.tax_percent}%)</span><span>{formatINR(quote.taxes_inr)}</span></div><div className="mt-1 flex justify-between border-t border-ink/15 pt-3 font-semibold"><span>Total</span><span>{formatINR(quote.total_inr)}</span></div></> : <p className="text-xs text-ink/45">{quoteLoaded ? "The host is setting this stay’s price." : "Calculating price…"}</p>}</div>}
       <button onClick={startBooking} disabled={!range?.from || !range.to || !quote} className="button-ink mt-5 w-full disabled:cursor-not-allowed disabled:opacity-40">Continue to booking <ArrowRight size={16} /></button>
-      <p className="mt-3 flex items-start gap-2 text-[11px] leading-5 text-ink/50"><Clock3 size={14} className="mt-0.5 shrink-0" /> Check-in 10 am–8 pm · check-out by 9 am. Custom times are always a conversation with your host.</p>
+      <p className="mt-3 flex items-start gap-2 text-[11px] leading-5 text-ink/50"><Clock3 size={14} className="mt-0.5 shrink-0" /> Check-in {timeLabel(property.checkinStart)}–{timeLabel(property.checkinEnd)} · check-out by {timeLabel(property.checkoutLatest)}. Custom times are always a conversation with your host.</p>
     </aside>
   );
 }
@@ -87,4 +87,9 @@ function parseLocalDate(value: string | null) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
+}
+
+function timeLabel(value: string) {
+  const hour = Number(value.slice(0, 2));
+  return `${hour % 12 || 12} ${hour >= 12 ? "pm" : "am"}`;
 }
