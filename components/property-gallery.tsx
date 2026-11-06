@@ -27,14 +27,14 @@ export function PropertyGallery({ slug, place, images, caption }: { slug: string
     <>
       {images.length === 0 ? <div className="grid min-h-[280px] place-items-center border border-dashed border-ink/20 bg-[#e9e1d2] p-8 text-center"><p className="font-display text-2xl text-ink/65">Photos will appear here</p></div> : <>
       <motion.div layoutId={`map-card-${slug}`} className="grid gap-3 md:grid-cols-[1.4fr_.6fr]">
-        <button type="button" data-cursor="View" onClick={() => setActive(0)} className="group relative aspect-[1.05] overflow-hidden bg-[#ddd0ba] text-left md:aspect-[1.22]" aria-label={`Open ${place} photo gallery`}>
+        <button type="button" onClick={() => setActive(0)} className="group relative aspect-[1.05] overflow-hidden bg-[#ddd0ba] text-left md:aspect-[1.22]" aria-label={`Open ${place} photo gallery`}>
           <motion.div layoutId={`property-image-${slug}-0`} className="absolute inset-0">
             <Image src={images[0]} alt={`${place}, Odisha`} fill priority sizes="(max-width: 768px) 100vw, 64vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.025]" />
           </motion.div>
           <span className="absolute bottom-5 left-5 bg-paper/90 px-3 py-2 font-display text-xl">{caption}</span><span className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-paper/90"><Expand size={16} /></span><span className="pointer-events-none absolute bottom-5 right-5 hidden rounded-full bg-ink/75 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white transition group-hover:block">View</span>
         </button>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
-          {images.slice(1, 3).map((image, index) => <button key={image} type="button" data-cursor="View" onClick={() => setActive(index + 1)} className={`group relative aspect-[1.2] overflow-hidden bg-[#ddd0ba] md:aspect-[1.5] ${index === 1 ? "hidden md:block" : ""}`} aria-label={`Open gallery image ${index + 2}`}>
+          {images.slice(1, 3).map((image, index) => <button key={image} type="button" onClick={() => setActive(index + 1)} className={`group relative aspect-[1.2] overflow-hidden bg-[#ddd0ba] md:aspect-[1.5] ${index === 1 ? "hidden md:block" : ""}`} aria-label={`Open gallery image ${index + 2}`}>
             <motion.div layoutId={`property-image-${slug}-${index + 1}`} className="absolute inset-0"><Image src={image} alt={`${place}, property detail ${index + 1}`} fill sizes="(max-width: 768px) 50vw, 30vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" /></motion.div><span className="absolute bottom-3 right-3 rounded-full bg-paper/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest">{index === 1 ? "All photos" : "View"}</span>
           </button>)}
         </div>

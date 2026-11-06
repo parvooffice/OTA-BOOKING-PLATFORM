@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
-import { differenceInCalendarDays, eachDayOfInterval, isBefore, startOfToday } from "date-fns";
+import { differenceInCalendarDays, eachDayOfInterval, format, isBefore, startOfToday } from "date-fns";
 import { ArrowRight, ArrowUpRight, CalendarDays, ChevronDown, Minus, Plus } from "lucide-react";
 import { motion, useReducedMotion, useSpring } from "framer-motion";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -74,7 +74,7 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
         animate={reduceMotion ? undefined : { y: [0, -6, 0, 6, 0], rotate: [0, .5, 0, -.5, 0] }}
         transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut", delay: index * .8 }}
       >
-        <Link href={`/properties/${property.slug}`} data-cursor="View" className="group block border-[3px] border-paper/90 bg-paper p-2 shadow-[0_18px_35px_rgba(27,22,18,.28)] transition-[box-shadow] duration-300 md:hover:shadow-[0_28px_55px_rgba(27,22,18,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0ca76]">
+        <Link href={`/properties/${property.slug}`} className="group block border-[3px] border-paper/90 bg-paper p-2 shadow-[0_18px_35px_rgba(27,22,18,.28)] transition-[box-shadow] duration-300 md:hover:shadow-[0_28px_55px_rgba(27,22,18,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0ca76]">
           <div className={`relative aspect-video overflow-hidden rounded-[30px] ${photoBackground}`}>
             {property.hero && <Image src={property.hero} alt={`${property.place}, Odisha`} fill priority={index === 0} sizes="(max-width: 767px) 45vw, 240px" className={`transition-transform duration-700 md:group-hover:scale-[1.06] ${isVillageLogo ? "object-contain p-7" : "object-cover object-center"}`} />}
             {!property.hero && property.slug === "puri" && <span className="absolute inset-0 grid place-items-center px-4 text-center font-display text-sm text-ink/55">Photo coming soon</span>}
@@ -100,6 +100,7 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
   const [range, setRange] = useState<DateRange | undefined>();
   const [guests, setGuests] = useState(Math.min(2, selected.maxGuests));
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [previewDate, setPreviewDate] = useState<Date>();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const supabase = getSupabaseBrowserClient();
@@ -124,6 +125,7 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
     return isBefore(end, start) ? [] : eachDayOfInterval({ start, end });
   }), [blocks]);
   const nights = range?.from && range.to ? differenceInCalendarDays(range.to, range.from) : 0;
+  const previewMatcher = (date: Date) => Boolean(range?.from && !range.to && previewDate && date >= range.from && date <= previewDate);
 
   function continueToStay() {
     if (!range?.from || !range.to) return;
@@ -140,8 +142,8 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
         <div className="flex items-end justify-between gap-3 border border-ink/15 px-3 py-2 sm:min-w-[128px]"><div><p className="text-[9px] uppercase tracking-[.16em] text-ink/45">Guests</p><p className="mt-1 text-xs text-ink/70">{guests} guests</p></div><div className="flex items-center gap-1"><button type="button" onClick={() => setGuests((value) => Math.max(1, value - 1))} className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15" aria-label="Remove a guest"><Minus size={12} /></button><button type="button" onClick={() => setGuests((value) => Math.min(selected.maxGuests, value + 1))} className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15" aria-label="Add a guest"><Plus size={12} /></button></div></div>
       </div>
       <p className="mt-2 text-[10px] text-ink/50">{selected.includedGuests} guests included · up to {selected.maxGuests} guests</p>
-      {calendarOpen && <div className="absolute left-0 right-0 top-full z-40 mt-2 border border-ink/15 bg-[#fbf8f1] p-3 shadow-[0_18px_50px_rgba(42,33,26,.2)]"><div className="flex items-center justify-between px-2"><p className="eyebrow text-laterite">Availability · {selected.name}</p><button type="button" onClick={() => setCalendarOpen(false)} className="text-xs text-ink/50">Close</button></div><DayPicker mode="range" selected={range} onSelect={(next) => { setRange(next); if (next?.from && next.to) setCalendarOpen(false); }} numberOfMonths={1} disabled={[{ before: startOfToday() }, ...blockedDays]} showOutsideDays className="booking-calendar" /></div>}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-ink/50">Check-in 10 AM to 8 PM · Check-out by 9 AM{nights > 0 ? ` · ${nights} ${nights === 1 ? "night" : "nights"}` : ""}</p><button type="button" onClick={continueToStay} disabled={!range?.from || !range.to} className="button-ink !min-h-10 !px-4 !text-xs disabled:cursor-not-allowed disabled:opacity-45">Check availability <ArrowRight size={14} /></button></div>
+      {calendarOpen && <div className="absolute left-0 right-0 top-full z-40 mt-2 border border-ink/15 bg-[#fbf8f1] p-3 shadow-[0_18px_50px_rgba(42,33,26,.2)]"><div className="flex items-center justify-between px-2"><p className="eyebrow text-laterite">Availability · {selected.name}</p><button type="button" onClick={() => setCalendarOpen(false)} className="text-xs text-ink/50">Close</button></div><DayPicker mode="range" selected={range} onSelect={(next) => { setRange(next); setPreviewDate(undefined); if (next?.from && next.to) setCalendarOpen(false); }} onDayMouseEnter={(date) => { if (range?.from && !range.to) setPreviewDate(date); }} onDayMouseLeave={() => setPreviewDate(undefined)} modifiers={{ preview: previewMatcher }} modifiersClassNames={{ selected: "booking-selected", range_start: "booking-range-start", range_end: "booking-range-end", range_middle: "booking-range-middle", preview: "booking-preview", disabled: "booking-disabled" }} excludeDisabled numberOfMonths={1} disabled={[{ before: startOfToday() }, ...blockedDays]} showOutsideDays className="booking-calendar" /></div>}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="text-[10px] text-ink/50"><p>Check-in 10 AM to 8 PM · Check-out by 9 AM</p>{nights > 0 && <p className="mt-1 font-semibold text-ink/70">{nights} {nights === 1 ? "night" : "nights"}</p>}</div><button type="button" onClick={continueToStay} disabled={!range?.from || !range.to} className="button-ink !min-h-10 !px-4 !text-xs disabled:cursor-not-allowed disabled:opacity-45">Check availability <ArrowRight size={14} /></button></div>
     </div>
   );
 
@@ -149,5 +151,5 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
 }
 
 function DateField({ label, date, onClick }: { label: string; date?: Date; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="flex min-h-[52px] items-center justify-between border border-ink/15 px-3 py-2 text-left hover:border-laterite"><span><span className="block text-[9px] uppercase tracking-[.16em] text-ink/45">{label}</span><span className="mt-1 block text-xs text-ink/70">{date ? localDateKey(date) : "Choose a date"}</span></span><CalendarDays size={15} className="text-laterite" /></button>;
+  return <button type="button" onClick={onClick} className="flex min-h-[52px] items-center justify-between border border-ink/15 px-3 py-2 text-left hover:border-laterite"><span><span className="block text-[9px] uppercase tracking-[.16em] text-ink/45">{label}</span><span className="mt-1 block text-xs text-ink/70">{date ? `${label}: ${format(date, "EEE, d MMM")}` : "Choose a date"}</span></span><CalendarDays size={15} className="text-laterite" /></button>;
 }

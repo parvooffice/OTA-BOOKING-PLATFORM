@@ -13,8 +13,9 @@ const config: Config = {
         mahogany: "#39241c"
       },
       fontFamily: {
-        display: ["Georgia", "Times New Roman", "serif"],
-        sans: ["Arial", "Helvetica", "sans-serif"]
+        base: ["var(--font-base)"],
+        display: ["var(--font-base)"],
+        sans: ["var(--font-base)"]
       }
     }
   },

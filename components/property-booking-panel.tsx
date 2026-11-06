@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
-import { differenceInCalendarDays, eachDayOfInterval, isBefore, startOfToday } from "date-fns";
+import { differenceInCalendarDays, eachDayOfInterval, format, isBefore, startOfToday } from "date-fns";
 import { ArrowRight, CalendarDays, Clock3, UsersRound } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { formatINR, localDateKey } from "@/lib/format";
@@ -19,6 +19,7 @@ export function PropertyBookingPanel({ property }: { property: { id: string; slu
   const initialCheckout = searchParams.get("checkout");
   const initialGuests = Number(searchParams.get("guests") ?? "2");
   const [range, setRange] = useState<DateRange | undefined>(() => ({ from: parseLocalDate(initialCheckin), to: parseLocalDate(initialCheckout) }));
+  const [previewDate, setPreviewDate] = useState<Date>();
   const [guests, setGuests] = useState(Math.min(Math.max(1, initialGuests || 2), property.maxGuests));
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -54,6 +55,7 @@ export function PropertyBookingPanel({ property }: { property: { id: string; slu
       .then(({ response, result }) => { if (sequence === quoteSequence.current) { setQuote(response.ok ? result.quote as Quote : null); setQuoteLoaded(true); } });
   }, [property.id, checkin, checkout, guests]);
   const nights = quote?.nights ?? (range?.from && range.to ? differenceInCalendarDays(range.to, range.from) : 0);
+  const previewMatcher = (date: Date) => Boolean(range?.from && !range.to && previewDate && date >= range.from && date <= previewDate);
   const blockedDays = useMemo(() => blocks.flatMap((block) => {
     const start = new Date(`${block.checkin_date}T12:00:00`);
     const finalNight = new Date(`${block.checkout_date}T12:00:00`);
@@ -71,7 +73,8 @@ export function PropertyBookingPanel({ property }: { property: { id: string; slu
     <aside className="border border-ink/15 bg-[#fbf8f1] p-5 shadow-[0_12px_36px_rgba(42,33,26,.08)] md:p-7">
       <div className="flex items-start justify-between gap-4 border-b border-ink/10 pb-5"><div><p className="eyebrow text-laterite">A night at this home</p><p className="mt-2 font-display text-3xl">{property.basePriceInr > 0 ? formatINR(property.basePriceInr) : "Pricing soon"} {property.basePriceInr > 0 && <span className="font-sans text-xs text-ink/45">/ night</span>}</p></div><CalendarDays className="mt-1 text-laterite" /></div>
       <div className="mt-5 flex items-center justify-between"><div><p className="eyebrow text-ink/55">Choose your dates</p><p className="mt-1 text-xs text-ink/50">Nights, not calendar days</p></div>{availabilityReady && <span className="text-[10px] text-lagoon">Live availability</span>}</div>
-      <div className="mt-3 overflow-hidden"><DayPicker mode="range" selected={range} onSelect={setRange} numberOfMonths={2} disabled={[{ before: startOfToday() }, ...blockedDays]} showOutsideDays className="booking-calendar" modifiersClassNames={{ selected: "booking-selected", range_start: "booking-range-start", range_end: "booking-range-end", range_middle: "booking-range-middle", disabled: "booking-disabled" }} /></div>
+      <div className="mt-3 overflow-hidden"><DayPicker mode="range" selected={range} onSelect={(next) => { setRange(next); setPreviewDate(undefined); }} onDayMouseEnter={(date) => { if (range?.from && !range.to) setPreviewDate(date); }} onDayMouseLeave={() => setPreviewDate(undefined)} modifiers={{ preview: previewMatcher }} modifiersClassNames={{ selected: "booking-selected", range_start: "booking-range-start", range_end: "booking-range-end", range_middle: "booking-range-middle", preview: "booking-preview", disabled: "booking-disabled" }} excludeDisabled numberOfMonths={2} disabled={[{ before: startOfToday() }, ...blockedDays]} showOutsideDays className="booking-calendar" /></div>
+      <div className="mt-3 grid gap-1 text-xs text-ink/60"><p>{range?.from ? `Check-in: ${format(range.from, "EEE, d MMM")}` : "Check-in: Choose a date"}</p><p>{range?.to ? `Check-out: ${format(range.to, "EEE, d MMM")}` : "Check-out: Choose a date"}</p>{nights > 0 && <p className="font-semibold text-ink/80">{nights} {nights === 1 ? "night" : "nights"}</p>}</div>
       <label className="mt-4 flex items-center justify-between border-y border-ink/10 py-4"><span className="flex items-center gap-2 text-sm"><UsersRound size={16} className="text-laterite" /> Guests</span><select value={guests} onChange={(event) => setGuests(Number(event.target.value))} className="bg-transparent text-sm outline-none" aria-label="Number of guests">{Array.from({ length: property.maxGuests }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1} {index === 0 ? "guest" : "guests"}</option>)}</select></label>
       {nights > 0 && <div className="grid gap-2 py-4 text-sm">{quote ? <><div className="flex justify-between"><span className="text-ink/60">Base ({property.includedGuests} guests included) · {nights} {nights === 1 ? "night" : "nights"}</span><span>{formatINR(quote.base_total_inr)}</span></div>{quote.extra_guests > 0 && <div className="flex justify-between gap-3"><span className="text-ink/60">Extra guests: {quote.extra_guests} × {formatINR(property.extraGuestFeeInr)}{property.extraGuestFeeMode === "per_night" ? ` × ${nights} ${nights === 1 ? "night" : "nights"}` : " × 1 stay"}</span><span>{formatINR(quote.extra_guest_total_inr)}</span></div>}<div className="flex justify-between"><span className="text-ink/60">Cleaning</span><span>{formatINR(quote.cleaning_fee_inr)}</span></div><div className="flex justify-between"><span className="text-ink/60">GST ({quote.tax_percent}%)</span><span>{formatINR(quote.taxes_inr)}</span></div><div className="mt-1 flex justify-between border-t border-ink/15 pt-3 font-semibold"><span>Total</span><span>{formatINR(quote.total_inr)}</span></div></> : <p className="text-xs text-ink/45">{quoteLoaded ? "The host is setting this stay’s price." : "Calculating price…"}</p>}</div>}
       <button onClick={startBooking} disabled={!range?.from || !range.to || !quote} className="button-ink mt-5 w-full disabled:cursor-not-allowed disabled:opacity-40">Continue to booking <ArrowRight size={16} /></button>
