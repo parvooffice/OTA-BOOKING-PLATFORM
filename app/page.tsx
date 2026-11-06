@@ -14,7 +14,7 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <main>
-        <section className="relative grid min-h-[calc(100svh-76px)] overflow-hidden bg-[#3d332b] text-paper md:grid-cols-[.86fr_1.14fr]">
+        <section className="relative grid min-h-[calc(100svh-76px)] overflow-hidden bg-[#3d332b] text-paper md:grid-cols-[.52fr_1fr]">
           <div className="grain relative z-10 flex min-h-[590px] flex-col justify-center px-6 py-14 md:min-h-[690px] md:px-[7vw] md:py-16">
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(42,33,26,.95)_0%,rgba(42,33,26,.86)_54%,rgba(42,33,26,.12)_100%)] md:bg-[linear-gradient(90deg,rgba(42,33,26,.94)_0%,rgba(42,33,26,.74)_75%,rgba(42,33,26,.15)_100%)]" />
             <div className="hero-intro relative z-10 max-w-[640px]">
