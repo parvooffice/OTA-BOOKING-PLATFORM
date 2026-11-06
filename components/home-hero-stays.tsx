@@ -27,7 +27,7 @@ export function HomeHeroStays({ properties }: { properties: RetreatProperty[] })
       <div className="grain pointer-events-none absolute inset-0 opacity-60" />
       <div className="relative z-10 mx-auto flex h-full max-w-[720px] flex-col justify-center">
         <p className="eyebrow mb-5 text-paper/70">Two stays · held close</p>
-        <div className="mx-auto grid w-full max-w-[580px] grid-cols-2 items-start gap-3 sm:gap-5 md:gap-6">
+        <div className="mx-auto grid w-full max-w-[580px] grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
           {stays.map((property, index) => <StayCard key={property.id} property={property} index={index} onSelect={setSelectedSlug} />)}
         </div>
         <HomeBookingBar properties={stays} selected={selected} selectedSlug={selectedSlug} onSelect={setSelectedSlug} />
@@ -43,6 +43,7 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
   const rotateY = useSpring(0, { stiffness: 210, damping: 24, mass: .7 });
   const tilt = index === 0 ? -3 : 2.5;
   const isVillageLogo = property.slug === "village-retreat" && property.images.length <= 1;
+  const photoBackground = property.hero ? "bg-[radial-gradient(ellipse_at_70%_35%,rgba(212,162,61,.5),transparent_38%),linear-gradient(145deg,#758c79_0%,#3d5c58_48%,#2a211a_100%)]" : property.slug === "village-retreat" ? "bg-[#2a211a]" : "bg-[#e9e1d2]";
 
   function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (reduceMotion || event.pointerType === "touch" || !window.matchMedia("(pointer: fine)").matches) return;
@@ -59,7 +60,7 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
 
   return (
     <motion.div
-      className={`relative min-w-0 md:max-w-[240px] md:justify-self-center ${index === 1 ? "md:translate-y-10" : ""}`}
+      className="relative min-w-0 md:max-w-[240px] md:justify-self-center"
       style={{ rotateX, rotateY, rotateZ: hovered ? 0 : tilt, zIndex: hovered ? 30 : index + 1, transformPerspective: 900 }}
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -110, rotate: tilt }}
       animate={{ opacity: 1, y: 0 }}
@@ -74,7 +75,7 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
         transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut", delay: index * .8 }}
       >
         <Link href={`/properties/${property.slug}`} data-cursor="View" className="group block border-[3px] border-paper/90 bg-paper p-2 shadow-[0_18px_35px_rgba(27,22,18,.28)] transition-[box-shadow] duration-300 md:hover:shadow-[0_28px_55px_rgba(27,22,18,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0ca76]">
-          <div className="relative aspect-[4/5] overflow-hidden bg-[radial-gradient(ellipse_at_70%_35%,rgba(212,162,61,.5),transparent_38%),linear-gradient(145deg,#758c79_0%,#3d5c58_48%,#2a211a_100%)]">
+          <div className={`relative aspect-video overflow-hidden rounded-[30px] ${photoBackground}`}>
             {property.hero && <Image src={property.hero} alt={`${property.place}, Odisha`} fill priority={index === 0} sizes="(max-width: 767px) 45vw, 240px" className={`transition-transform duration-700 md:group-hover:scale-[1.06] ${isVillageLogo ? "object-contain p-7" : "object-cover object-center"}`} />}
             <span className="absolute left-2 top-2 bg-paper/95 px-2.5 py-1 font-display text-sm text-ink">0{index + 1}</span>
             <span className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink transition-all duration-300 md:group-hover:rotate-45 md:group-hover:bg-[#d4a23d] md:group-hover:text-ink"><ArrowUpRight size={16} /></span>
@@ -142,7 +143,7 @@ function HomeBookingBar({ properties, selected, selectedSlug, onSelect }: { prop
     </div>
   );
 
-  return <div id="booking-bar" className="mt-8 md:mt-12"><div className="hidden md:block">{controls}</div><div className="md:hidden"><button type="button" onClick={() => setMobileOpen((open) => !open)} className="flex w-full items-center justify-between border border-ink/15 bg-[#fbf8f1] px-4 py-3 text-left shadow-[0_10px_30px_rgba(42,33,26,.2)]"><span><span className="eyebrow block text-laterite">Book a date</span><span className="mt-1 block text-xs text-ink/65">{range?.from && range.to ? `${localDateKey(range.from)} → ${localDateKey(range.to)}` : "Choose your stay and dates"}</span></span><ChevronDown size={17} className={mobileOpen ? "rotate-180 transition-transform" : "transition-transform"} /></button>{mobileOpen && <div className="fixed inset-x-3 bottom-3 z-[90] max-h-[calc(100svh-100px)] overflow-y-auto">{controls}</div>}</div></div>;
+  return <div id="booking-bar" className="mt-10 md:mt-14"><div className="hidden md:block">{controls}</div><div className="md:hidden"><button type="button" onClick={() => setMobileOpen((open) => !open)} className="flex w-full items-center justify-between border border-ink/15 bg-[#fbf8f1] px-4 py-3 text-left shadow-[0_10px_30px_rgba(42,33,26,.2)]"><span><span className="eyebrow block text-laterite">Book a date</span><span className="mt-1 block text-xs text-ink/65">{range?.from && range.to ? `${localDateKey(range.from)} → ${localDateKey(range.to)}` : "Choose your stay and dates"}</span></span><ChevronDown size={17} className={mobileOpen ? "rotate-180 transition-transform" : "transition-transform"} /></button>{mobileOpen && <div className="fixed inset-x-3 bottom-3 z-[90] max-h-[calc(100svh-100px)] overflow-y-auto">{controls}</div>}</div></div>;
 }
 
 function DateField({ label, date, onClick }: { label: string; date?: Date; onClick: () => void }) {

@@ -51,16 +51,16 @@ export async function POST(request: Request) {
     let display: Buffer; let thumb: Buffer;
     try {
       display = await sharp(original, { failOn: "error" }).rotate().resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true }).png({ compressionLevel: 9 }).toBuffer();
-      thumb = await sharp(display).resize(600, 450, { fit: "cover", position: "attention" }).png({ compressionLevel: 9 }).toBuffer();
+      thumb = await sharp(display).resize(640, 360, { fit: "cover", position: "attention" }).png({ compressionLevel: 9 }).toBuffer();
     } catch { await service.storage.from("property-images").remove([originalPath]); return NextResponse.json({ error: `${file.name} is not a supported image.` }, { status: 415 }); }
-    const coverPath = order === 0 ? `${property.slug}/hero.png` : `${property.slug}/gallery/${String(order).padStart(2, "0")}.png`;
+    const coverPath = `${property.slug}/gallery/${String(order + 1).padStart(2, "0")}.png`;
     const thumbPath = `${property.slug}/thumbs/${String(order + 1).padStart(2, "0")}.png`;
     const [{ error: displayError }, { error: thumbError }] = await Promise.all([
       service.storage.from("property-images").upload(coverPath, display, { contentType: "image/png", upsert: true }),
       service.storage.from("property-images").upload(thumbPath, thumb, { contentType: "image/png", upsert: true })
     ]);
     if (displayError || thumbError) return NextResponse.json({ error: "The PNG versions could not be stored." }, { status: 500 });
-    const { data: row, error } = await service.from("property_images").insert({ property_id: property.id, storage_path: coverPath, thumb_path: thumbPath, original_path: originalPath, alt: `${property.slug} stay`, sort_order: order, is_cover: order === 0, edit_params: {} }).select("id").single();
+    const { data: row, error } = await service.from("property_images").insert({ property_id: property.id, storage_path: coverPath, thumb_path: thumbPath, original_path: originalPath, alt: `${property.slug} stay`, sort_order: order, is_cover: false, edit_params: {} }).select("id").single();
     if (error) return NextResponse.json({ error: "Image record could not be saved." }, { status: 500 });
     inserted.push(row.id); order += 1;
   }
@@ -118,14 +118,21 @@ export async function PATCH(request: Request) {
     if (input.editParams.rotation) pipeline = pipeline.rotate(input.editParams.rotation, { background: { r: 245, g: 240, b: 231, alpha: 1 } });
     const contrast = input.editParams.contrast;
     pipeline = pipeline.modulate({ brightness: input.editParams.brightness, saturation: input.editParams.saturation }).linear(contrast, 128 * (1 - contrast));
-    const display = await pipeline.resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true }).png({ compressionLevel: 9 }).toBuffer();
-    const thumb = await sharp(display).resize(600, 450, { fit: "cover", position: "attention" }).png({ compressionLevel: 9 }).toBuffer();
+    const property = Array.isArray(image.properties) ? image.properties[0] : image.properties;
+    const renderAsCover = input.isCover === true || image.is_cover;
+    const targetStoragePath = renderAsCover && property?.slug ? `${property.slug}/hero.png` : image.storage_path;
+    const targetThumbPath = renderAsCover && property?.slug ? `${property.slug}/thumbs/cover.png` : image.thumb_path;
+    const display = await pipeline.resize(renderAsCover ? { width: 1600, height: 900, fit: "cover", position: "attention" } : { width: 1800, height: 1800, fit: "inside", withoutEnlargement: true }).png({ compressionLevel: 9 }).toBuffer();
+    const thumb = await sharp(display).resize(renderAsCover ? 640 : 600, renderAsCover ? 360 : 450, { fit: "cover", position: "attention" }).png({ compressionLevel: 9 }).toBuffer();
     const [{ error: displayError }, { error: thumbError }] = await Promise.all([
-      service.storage.from("property-images").upload(image.storage_path, display, { contentType: "image/png", upsert: true }),
-      service.storage.from("property-images").upload(image.thumb_path, thumb, { contentType: "image/png", upsert: true })
+      service.storage.from("property-images").upload(targetStoragePath, display, { contentType: "image/png", upsert: true }),
+      service.storage.from("property-images").upload(targetThumbPath, thumb, { contentType: "image/png", upsert: true })
     ]);
     if (displayError || thumbError) return NextResponse.json({ error: "Edited PNGs could not be saved." }, { status: 500 });
     updates.edit_params = input.editParams;
+    updates.storage_path = targetStoragePath;
+    updates.thumb_path = targetThumbPath;
+    if (targetStoragePath !== image.storage_path || targetThumbPath !== image.thumb_path) await service.storage.from("property-images").remove([image.storage_path, image.thumb_path]);
   }
   if (Object.keys(updates).length) {
     const { error } = await service.from("property_images").update(updates).eq("id", image.id);
