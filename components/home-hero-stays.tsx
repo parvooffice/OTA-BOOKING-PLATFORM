@@ -77,6 +77,8 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
         <Link href={`/properties/${property.slug}`} data-cursor="View" className="group block border-[3px] border-paper/90 bg-paper p-2 shadow-[0_18px_35px_rgba(27,22,18,.28)] transition-[box-shadow] duration-300 md:hover:shadow-[0_28px_55px_rgba(27,22,18,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f0ca76]">
           <div className={`relative aspect-video overflow-hidden rounded-[30px] ${photoBackground}`}>
             {property.hero && <Image src={property.hero} alt={`${property.place}, Odisha`} fill priority={index === 0} sizes="(max-width: 767px) 45vw, 240px" className={`transition-transform duration-700 md:group-hover:scale-[1.06] ${isVillageLogo ? "object-contain p-7" : "object-cover object-center"}`} />}
+            {!property.hero && property.slug === "puri" && <span className="absolute inset-0 grid place-items-center px-4 text-center font-display text-sm text-ink/55">Photo coming soon</span>}
+            {!property.hero && property.slug === "village-retreat" && <span className="absolute inset-0 grid place-items-center px-8 text-center font-display text-sm uppercase tracking-[.18em] text-paper">The Village Retreat, Puri</span>}
             <span className="absolute left-2 top-2 bg-paper/95 px-2.5 py-1 font-display text-sm text-ink">0{index + 1}</span>
             <span className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink transition-all duration-300 md:group-hover:rotate-45 md:group-hover:bg-[#d4a23d] md:group-hover:text-ink"><ArrowUpRight size={16} /></span>
           </div>
