@@ -13,16 +13,17 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <main>
-        <section className="relative grid min-h-[calc(100svh-76px)] overflow-hidden bg-[#3d332b] text-paper md:grid-cols-[.52fr_1fr]">
-          <div className="grain relative z-10 flex min-h-[590px] flex-col justify-center bg-[#f4efe6] px-6 py-14 text-ink md:min-h-[690px] md:px-[7vw] md:py-16">
+        <section className="relative grid min-h-[calc(100svh-76px)] overflow-hidden bg-[#3d332b] text-paper md:grid-cols-[27fr_73fr]">
+          <div className="grain relative z-10 flex min-h-[590px] flex-col justify-center px-6 py-14 md:min-h-[690px] md:px-8 md:py-16">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(42,33,26,.95)_0%,rgba(42,33,26,.86)_54%,rgba(42,33,26,.12)_100%)] md:bg-[linear-gradient(90deg,rgba(42,33,26,.94)_0%,rgba(42,33,26,.74)_75%,rgba(42,33,26,.15)_100%)]" />
             <div className="hero-intro relative z-10 max-w-[640px]">
-              <p className="hero-eyebrow relative -top-10 flex items-center gap-3 whitespace-nowrap text-[#b8841f] md:-top-14"><span className="h-px w-9 bg-[#b8841f]" /><span className="odia-word">ଓଡ଼ିଶା</span><span className="latin-word">· ODISHA, AT ITS OWN PACE</span></p>
-              <h1 className="mt-7 font-display text-[clamp(3rem,4.9vw,4.65rem)] leading-[.88] tracking-[-.055em]">A little<br />closer to<br /><em className="font-normal text-[#b8841f]">this place.</em></h1>
-              <p className="mt-7 max-w-[390px] text-base leading-7 text-ink/75">Two owner-run stays. One big-hearted corner of India. Find your own small piece of Odisha.</p>
-              <div className="mt-7 flex flex-wrap items-center gap-3"><Link href="#journey" className="inline-flex min-h-12 items-center gap-2 px-0 text-sm text-ink/80 hover:text-ink">Take the long way <ArrowDown size={15} /></Link></div>
-              <div className="mt-10 flex items-center gap-3 text-xs text-ink/55"><span className="h-px w-12 bg-ink/35" />A small collection, held by hand</div>
+              <p className="hero-eyebrow relative -top-10 flex items-center gap-3 whitespace-nowrap text-[#edc56c] md:-top-14"><span className="h-px w-9 bg-[#edc56c]" /><span className="odia-word">ଓଡ଼ିଶା</span><span className="latin-word">· ODISHA, AT ITS OWN PACE</span></p>
+              <h1 className="mt-7 font-display text-[clamp(3rem,4.9vw,4.65rem)] leading-[.88] tracking-[-.055em]">A little<br />closer to<br /><em className="font-normal text-[#e0aa4a]">this place.</em></h1>
+              <p className="mt-7 max-w-[390px] text-base leading-7 text-paper/75">Two owner-run stays. One big-hearted corner of India. Find your own small piece of Odisha.</p>
+              <div className="mt-7 flex flex-wrap items-center gap-3"><Link href="#journey" className="inline-flex min-h-12 items-center gap-2 px-0 text-sm text-paper/80 hover:text-white">Take the long way <ArrowDown size={15} /></Link></div>
+              <div className="mt-10 flex items-center gap-3 text-xs text-paper/55"><span className="h-px w-12 bg-paper/35" />A small collection, held by hand</div>
             </div>
-            <KonarkMark className="hero-wheel absolute -bottom-16 -left-20 z-[1] h-60 w-60 text-[#8f6a42]/25 md:-bottom-24 md:-left-24 md:h-[340px] md:w-[340px]" />
+            <KonarkMark className="hero-wheel absolute -bottom-16 -left-20 z-[1] h-60 w-60 text-[#d4a23d]/30 md:-bottom-24 md:-left-24 md:h-[340px] md:w-[340px]" />
           </div>
           <HomeHeroStays properties={properties} />
           <div className="absolute bottom-6 left-6 z-20 hidden md:block"><span className="eyebrow text-ink/55">19°48&apos;48.6&quot;N · 85°49&apos;52.3&quot;E</span></div>

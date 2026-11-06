@@ -23,7 +23,7 @@ export function HomeHeroStays({ properties }: { properties: RetreatProperty[] })
 
   const selected = stays.find((property) => property.slug === selectedSlug) ?? stays[0];
   return (
-    <div id="stays" className="relative overflow-hidden bg-[radial-gradient(ellipse_at_70%_35%,rgba(212,162,61,.5),transparent_38%),linear-gradient(145deg,#758c79_0%,#3d5c58_48%,#2a211a_100%)] px-4 py-10 sm:px-8 md:min-h-[690px] md:px-10 md:py-12">
+    <div id="stays" className="relative overflow-hidden bg-[radial-gradient(ellipse_at_70%_35%,rgba(212,162,61,.5),transparent_38%),linear-gradient(145deg,#758c79_0%,#3d5c58_48%,#2a211a_100%)] px-4 py-10 sm:px-6 md:min-h-[690px] md:pl-6 md:pr-8 md:py-12">
       <div className="grain pointer-events-none absolute inset-0 opacity-60" />
       <div className="relative z-10 mx-auto flex h-full w-full flex-col justify-start pt-8 md:pt-8">
         <p className="eyebrow mb-5 text-paper/70">Two stays · held close</p>
@@ -79,7 +79,6 @@ function StayCard({ property, index, onSelect }: { property: RetreatProperty; in
             {property.hero && <Image src={property.hero} alt={`${property.place}, Odisha`} fill priority={index === 0} sizes="(max-width: 767px) 45vw, 240px" className={`transition-transform duration-700 md:group-hover:scale-[1.06] ${isVillageLogo ? "object-contain p-7" : "object-cover object-center"}`} />}
             {!property.hero && property.slug === "puri" && <span className="absolute inset-0 grid place-items-center px-4 text-center font-display text-sm text-ink/55">Photo coming soon</span>}
             {!property.hero && property.slug === "village-retreat" && <span className="absolute inset-0 grid place-items-center px-8 text-center font-display text-sm uppercase tracking-[.18em] text-paper">The Village Retreat, Puri</span>}
-            <span className="absolute left-2 top-2 bg-paper/95 px-2.5 py-1 font-display text-sm text-ink">0{index + 1}</span>
             <span className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink transition-all duration-300 md:group-hover:rotate-45 md:group-hover:bg-[#d4a23d] md:group-hover:text-ink"><ArrowUpRight size={16} /></span>
           </div>
           <div className="px-1 pb-1 pt-3">

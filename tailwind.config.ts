@@ -6,7 +6,7 @@ const config: Config = {
     extend: {
       colors: {
         paper: "#f5f0e7",
-        ink: "var(--text-ink)",
+        ink: "#2a211a",
         laterite: "#a64d37",
         turmeric: "#d4a23d",
         lagoon: "#4d817b",
