@@ -17,11 +17,10 @@ export function SiteHeader() {
           <Link className="text-sm hover:text-laterite" href="/#stays">The stays</Link>
           <Link className="text-sm hover:text-laterite" href="/#journey">Our Odisha</Link>
           <Link className="text-sm hover:text-laterite" href="/account">Your booking</Link>
-          <Link className="button-ink !min-h-10 !text-sm" href="/#map">Find your place <span aria-hidden="true">↗</span></Link>
         </nav>
         <button type="button" className="flex h-11 w-11 items-center justify-center md:hidden" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
-      {open && <nav className="absolute left-0 right-0 top-full border-b border-ink/10 bg-paper p-5 shadow-lg md:hidden" aria-label="Mobile navigation"><div className="grid gap-4"><Link href="/#stays" onClick={() => setOpen(false)}>The stays</Link><Link href="/#journey" onClick={() => setOpen(false)}>Our Odisha</Link><Link href="/account" onClick={() => setOpen(false)}>Your booking</Link><Link className="button-ink" href="/#map" onClick={() => setOpen(false)}>Find your place ↗</Link></div></nav>}
+      {open && <nav className="absolute left-0 right-0 top-full border-b border-ink/10 bg-paper p-5 shadow-lg md:hidden" aria-label="Mobile navigation"><div className="grid gap-4"><Link href="/#stays" onClick={() => setOpen(false)}>The stays</Link><Link href="/#journey" onClick={() => setOpen(false)}>Our Odisha</Link><Link href="/account" onClick={() => setOpen(false)}>Your booking</Link></div></nav>}
     </header>
   );
 }

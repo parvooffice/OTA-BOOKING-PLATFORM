@@ -3,7 +3,6 @@ import { ArrowDown, ArrowUpRight, MoveRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { KonarkMark } from "@/components/konark-mark";
-import { MapExplorer } from "@/components/map-explorer";
 import { getProperties } from "@/lib/property-data";
 import { HomeStory } from "@/components/home-story";
 import { HomeHeroStays } from "@/components/home-hero-stays";
@@ -39,14 +38,8 @@ export default async function HomePage() {
               <div className="aspect-[.93] rotate-[-1.3deg] bg-[radial-gradient(ellipse_at_65%_30%,rgba(212,162,61,.45),transparent_34%),linear-gradient(145deg,#a64d37_0%,#6b4b3b_48%,#263e3d_100%)] shadow-[0_20px_50px_rgba(42,33,26,.16)]" />
               <p className="absolute -bottom-7 right-0 max-w-[220px] rotate-2 bg-paper px-4 py-3 font-display text-xl shadow-lg">No two mornings look alike.</p>
             </div>
-            <div><p className="eyebrow text-laterite">Not a collection. A connection.</p><h2 className="mt-4 max-w-2xl font-display text-5xl leading-[.99] md:text-7xl">Here, the stay is part of the story.</h2><p className="mt-7 max-w-xl text-base leading-7 text-ink/70">Odisha is not a place to hurry through. Choose the coast or a village stay, meet the people who welcome you, then leave the rest of the day to you.</p><Link href="#map" className="mt-7 inline-flex items-center gap-3 border-b border-laterite pb-2 text-sm font-semibold text-laterite">A map, and a little more <MoveRight size={16} /></Link></div>
+            <div><p className="eyebrow text-laterite">Not a collection. A connection.</p><h2 className="mt-4 max-w-2xl font-display text-5xl leading-[.99] md:text-7xl">Here, the stay is part of the story.</h2><p className="mt-7 max-w-xl text-base leading-7 text-ink/70">Odisha is not a place to hurry through. Choose the coast or a village stay, meet the people who welcome you, then leave the rest of the day to you.</p><Link href="#stays" className="mt-7 inline-flex items-center gap-3 border-b border-laterite pb-2 text-sm font-semibold text-laterite">See the two stays <MoveRight size={16} /></Link></div>
           </div>
-        </section>
-
-        <section id="map" className="scroll-mt-20 bg-paper">
-          <div className="mx-auto flex max-w-[1440px] flex-col justify-between gap-4 px-5 py-12 md:flex-row md:items-end md:px-10"><div><p className="eyebrow text-laterite">Come see where we are</p><h2 className="mt-3 font-display text-5xl leading-none md:text-6xl">Find your corner.</h2></div><p className="max-w-sm text-sm leading-6 text-ink/65">Two homes, from the Puri coast to village quiet. Tap a pin, have a look around.</p></div>
-          <MapExplorer properties={properties} />
-          <div className="ikat-rule" />
         </section>
 
         <section className="px-5 py-20 md:px-10 md:py-28"><div className="mx-auto grid max-w-[1440px] gap-8 border-l-[3px] border-laterite pl-6 md:grid-cols-[1fr_auto] md:items-center md:pl-10"><div><p className="eyebrow text-laterite">We’ll be right here</p><p className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] md:text-6xl">Need a little help finding the right stay?</p><p className="mt-4 text-sm text-ink/60">Tell us what you’re looking for. A real person will write back.</p></div><a className="button-ink w-fit" href="mailto:retreatodisha@gmail.com">Write to your host <ArrowUpRight size={16} /></a></div></section>
