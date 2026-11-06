@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import { differenceInCalendarDays, eachDayOfInterval, isBefore, startOfToday } from "date-fns";
@@ -14,8 +14,12 @@ type Quote = { nights: number; guests: number; extra_guests: number; base_total_
 
 export function PropertyBookingPanel({ property }: { property: { id: string; slug: string; basePriceInr: number; cleaningFeeInr: number; maxGuests: number; includedGuests: number; extraGuestFeeInr: number; extraGuestFeeMode: "per_night" | "per_stay" } }) {
   const router = useRouter();
-  const [range, setRange] = useState<DateRange | undefined>();
-  const [guests, setGuests] = useState(Math.min(2, property.maxGuests));
+  const searchParams = useSearchParams();
+  const initialCheckin = searchParams.get("checkin");
+  const initialCheckout = searchParams.get("checkout");
+  const initialGuests = Number(searchParams.get("guests") ?? "2");
+  const [range, setRange] = useState<DateRange | undefined>(() => ({ from: parseLocalDate(initialCheckin), to: parseLocalDate(initialCheckout) }));
+  const [guests, setGuests] = useState(Math.min(Math.max(1, initialGuests || 2), property.maxGuests));
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteLoaded, setQuoteLoaded] = useState(false);
@@ -74,4 +78,10 @@ export function PropertyBookingPanel({ property }: { property: { id: string; slu
       <p className="mt-3 flex items-start gap-2 text-[11px] leading-5 text-ink/50"><Clock3 size={14} className="mt-0.5 shrink-0" /> Check-in 10 am–8 pm · check-out by 9 am. Custom times are always a conversation with your host.</p>
     </aside>
   );
+}
+
+function parseLocalDate(value: string | null) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
