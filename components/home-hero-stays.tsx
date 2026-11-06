@@ -25,9 +25,9 @@ export function HomeHeroStays({ properties }: { properties: RetreatProperty[] })
   return (
     <div id="stays" className="relative overflow-hidden bg-[radial-gradient(ellipse_at_70%_35%,rgba(212,162,61,.5),transparent_38%),linear-gradient(145deg,#758c79_0%,#3d5c58_48%,#2a211a_100%)] px-4 py-10 sm:px-8 md:min-h-[690px] md:px-10 md:py-12">
       <div className="grain pointer-events-none absolute inset-0 opacity-60" />
-      <div className="relative z-10 mx-auto flex h-full max-w-[760px] flex-col justify-start pt-8 md:pt-8">
+      <div className="relative z-10 mx-auto flex h-full w-full flex-col justify-start pt-8 md:pt-8">
         <p className="eyebrow mb-5 text-paper/70">Two stays · held close</p>
-        <div className="mx-auto grid w-full max-w-[760px] grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
+        <div className="mx-auto grid w-full grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-6">
           {stays.map((property, index) => <StayCard key={property.id} property={property} index={index} onSelect={setSelectedSlug} />)}
         </div>
         <HomeBookingBar properties={stays} selected={selected} selectedSlug={selectedSlug} onSelect={setSelectedSlug} />
