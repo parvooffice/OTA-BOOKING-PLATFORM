@@ -6,7 +6,7 @@ const config: Config = {
     extend: {
       colors: {
         paper: "#f5f0e7",
-        ink: "#2a211a",
+        ink: "var(--text-ink)",
         laterite: "#a64d37",
         turmeric: "#d4a23d",
         lagoon: "#4d817b",
@@ -16,6 +16,11 @@ const config: Config = {
         base: ["var(--font-base)"],
         display: ["var(--font-base)"],
         sans: ["var(--font-base)"]
+      },
+      fontSize: {
+        xs: ["0.875rem", { lineHeight: "1.25rem" }],
+        sm: ["1rem", { lineHeight: "1.5rem" }],
+        base: ["1.125rem", { lineHeight: "1.75rem" }]
       }
     }
   },
